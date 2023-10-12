@@ -1,0 +1,13 @@
+{
+  "index_url": "https://www.damai.cn/",
+  "login_url": "https://passport.damai.cn/login?ru=https%3A%2F%2Fwww.damai.cn%2F",
+  "target_url": "https://detail.damai.cn/item.htm?spm=a2oeg.search_category.0.0.39984d15AojgsW&id=741522019158&clicktitle=Hi%E9%99%8C%E7%94%9F%E4%BA%BA2023%E5%BA%84%E5%BF%83%E5%A6%8D%E5%B7%A1%E5%9B%9E%E6%BC%94%E5%94%B1%E4%BC%9A-%E5%B9%BF%E5%B7%9E%E7%AB%99",
+  "users": [
+    "名字1",
+    "名字2"
+  ],
+  "city": "广州",
+  "date": "2023-11-04",
+  "price": "880",
+  "if_commit_order": false
+}
