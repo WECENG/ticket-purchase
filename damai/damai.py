@@ -13,7 +13,7 @@ from config import Config
 
 
 def load_config():
-    with open('config.json', 'r') as config_file:
+    with open('config.json', 'r', encoding='utf-8') as config_file:
         config = json.load(config_file)
     return Config(config['index_url'],
                   config['login_url'],
