@@ -9,7 +9,7 @@
 
 其流程图如下:
 
-<img src="大麦抢票流程.png" width="50%" height="50%" />
+<img src="img/大麦抢票流程.png" width="50%" height="50%" />
 
 ## 准备工作
 ### 1. 配置环境
@@ -56,7 +56,7 @@ pip3 install selenium
 
 在运行程序之前，需要先修改`config.json`文件。该文件用于指定用户需要抢票的相关信息，包括演唱会的场次、观演的人员、城市、日期、价格等。文件结果如下图所示：
 
-<img src="config_json.png" width="50%" height="50%" />
+<img src="img/config_json.png" width="50%" height="50%" />
 
 #### 2.1 文件内容说明
 
@@ -75,11 +75,11 @@ pip3 install selenium
 
 进入大麦网https://www.damai.cn/，选择你需要抢票的演唱会。假设如下图所示：
 
-<img src="example.png" width="50%" height="50%" />
+<img src="img/example.png" width="50%" height="50%" />
 
 接下来按照下图的标注对配置文件进行修改：
 
-<img src="example_detail.png" width="50%" height="50%" />
+<img src="img/example_detail.png" width="50%" height="50%" />
 
 最终`config.json`的文件内容如下：
 
@@ -109,4 +109,142 @@ pip3 install selenium
 cd damai
 python3 damai.py
 ```
+
+
+
+# 大麦app抢票
+
+大麦app抢票脚本需要依赖appium，因此需要现在安装appium server&client环境，步骤如下：
+
+## appium server
+
+### 下载
+
+- 先安装好node环境（具备npm）node版本号18.0.0
+
+- 先下载并安装好android sdk，并配置环境变量（appium server运行需依赖android sdk)
+
+- 下载appium
+
+  ```shell
+  npm install -g appium
+  ```
+
+- 查看appium是否安装成功
+
+  ```shell
+  appium -v
+  ```
+
+- 下载UiAutomator2驱动
+
+  ```shell
+  npm install appium-uiautomator2-driver
+  ```
+
+​		可能会遇到如下错误：
+
+```tex
+➜  xcode git:(master) ✗ npm install appium-uiautomator2-driver
+
+npm ERR! code 1
+npm ERR! path /Users/chenweicheng/Documents/xcode/node_modules/appium-uiautomator2-driver/node_modules/appium-chromedriver
+npm ERR! command failed
+npm ERR! command sh -c node install-npm.js
+npm ERR! [11:57:54] Error installing Chromedriver: Request failed with status code 404
+npm ERR! [11:57:54] AxiosError: Request failed with status code 404
+npm ERR!     at settle (/Users/chenweicheng/Documents/xcode/node_modules/appium-uiautomator2-driver/node_modules/axios/lib/core/settle.js:19:12)
+npm ERR!     at IncomingMessage.handleStreamEnd (/Users/chenweicheng/Documents/xcode/node_modules/appium-uiautomator2-driver/node_modules/axios/lib/adapters/http.js:572:11)
+npm ERR!     at IncomingMessage.emit (node:events:539:35)
+npm ERR!     at endReadableNT (node:internal/streams/readable:1344:12)
+npm ERR!     at processTicksAndRejections (node:internal/process/task_queues:82:21)
+npm ERR! [11:57:54] Downloading Chromedriver can be skipped by setting the'APPIUM_SKIP_CHROMEDRIVER_INSTALL' environment variable.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /Users/chenweicheng/.npm/_logs/2023-10-26T03_57_35_950Z-debug-0.log
+```
+
+​		解决办法（添加环境变量，错误原因是没有找到chrome浏览器驱动，忽略即可）
+
+```shell
+export APPIUM_SKIP_CHROMEDRIVER_INSTALL=true
+```
+
+### 启动
+
+启动appium server并使用uiautomator2驱动
+
+```shell
+appium --use-plugins uiautomator2
+```
+
+启动成功讲出现如下信息：
+
+```
+[Appium] Welcome to Appium v2.2.1 (REV 2176894a5be5da17a362bf3f20678641a78f4b69)
+[Appium] Non-default server args:
+[Appium] {
+[Appium]   usePlugins: [
+[Appium]     'uiautomator2'
+[Appium]   ]
+[Appium] }
+[Appium] Attempting to load driver uiautomator2...
+[Appium] Requiring driver at /Users/chenweicheng/Documents/xcode/node_modules/appium-uiautomator2-driver
+[Appium] Appium REST http interface listener started on http://0.0.0.0:4723
+[Appium] You can provide the following URLs in your client code to connect to this server:
+[Appium] 	http://127.0.0.1:4723/ (only accessible from the same host)
+[Appium] 	http://172.31.102.45:4723/
+[Appium] 	http://198.18.0.1:4723/
+[Appium] Available drivers:
+[Appium]   - uiautomator2@2.32.3 (automationName 'UiAutomator2')
+[Appium] No plugins have been installed. Use the "appium plugin" command to install the one(s) you want to use.
+```
+
+其中`[Appium] 	http://127.0.0.1:4723/ (only accessible from the same host)
+[Appium] 	http://172.31.102.45:4723/
+[Appium] 	http://198.18.0.1:4723/`为appium server连接地址
+
+
+
+## appium client
+
+- 先下载并安装好python3和pip3
+
+- 安装
+
+  ```shell
+  pip3 install appium-puthon-client
+  ```
+
+- 在代码中引入并使用appium
+
+  ```python
+  from appium import webdriver
+  from appium.options.common.base import AppiumOptions
+  
+  device_app_info = AppiumOptions()
+  device_app_info.set_capability('platformName', 'Android')
+  device_app_info.set_capability('platformVersion', '10')
+  device_app_info.set_capability('deviceName', 'YourDeviceName')
+  device_app_info.set_capability('appPackage', 'cn.damai')
+  device_app_info.set_capability('appActivity', '.launcher.splash.SplashMainActivity')
+  device_app_info.set_capability('unicodeKeyboard', True)
+  device_app_info.set_capability('resetKeyboard', True)
+  device_app_info.set_capability('noReset', True)
+  device_app_info.set_capability('newCommandTimeout', 6000)
+  device_app_info.set_capability('automationName', 'UiAutomator2')
+  
+  # 连接appium server，server地址查看appium启动信息
+  driver = webdriver.Remote('http://127.0.0.1:4723', options=device_app_info)
+  
+  ```
+
+- 启动脚本程序
+
+  ```shell
+  cd damai_appium
+  python3 damai_appium.py
+  ```
+
+  
 

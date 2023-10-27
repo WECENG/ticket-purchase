@@ -1,0 +1,12 @@
+{
+  "server_url": "http://127.0.0.1:4723",
+  "keyword": "郁可唯",
+  "users": [
+    "姓名1",
+    "姓名2"
+  ],
+  "city": "广州",
+  "date": "11.26",
+  "price": "看台1080元",
+  "if_commit_order": false
+}
