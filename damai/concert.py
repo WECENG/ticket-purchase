@@ -226,7 +226,7 @@ class Concert:
             time.sleep(0.2)
             if self.config.if_commit_order:
                 self.driver.find_element(
-                    value='//*[@id="dmOrderSubmitBlock_DmOrderSubmitBlock"]/div[2]/div/div[2]/div[3]/div[2]/span',
+                    value='//*[@id="dmOrderSubmitBlock_DmOrderSubmitBlock"]/div[2]/div/div[2]/div[2]/div[2]',
                     by=By.XPATH).click()
 
     def finish(self):
