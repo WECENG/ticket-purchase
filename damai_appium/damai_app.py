@@ -69,10 +69,12 @@ if driver.find_elements(by=By.XPATH,
     for city in driver.find_elements(by=By.ID, value='tv_tour_city'):
         if config.city in city.text:
             city.click()
+            break
     # 日期选择
     for date in driver.find_elements(by=By.ID, value='tv_tour_time'):
         if config.date in date.text:
             date.click()
+            break
 
 while driver.find_elements(by=By.XPATH,
                            value='//android.widget.FrameLayout[@resource-id="cn.damai:id/trade_project_detail_purchase_status_bar_container_fl"]'):
@@ -115,12 +117,22 @@ while driver.find_elements(by=By.XPATH,
         # 预约购票
         driver.find_element(by=By.XPATH,
                             value='//android.widget.FrameLayout[@resource-id="cn.damai:id/trade_project_detail_purchase_status_bar_container_fl"]/android.widget.LinearLayout').click()
+
+        # 日期选择
+        if driver.find_elements(by=By.ID, value='project_detail_perform_flowlayout'):
+            for date in driver.find_elements(by=By.XPATH,
+                                              value='//android.widget.TextView[@resource-id="cn.damai:id/item_text"]'):
+                if config.date in date.text:
+                    date.click()
+                    break
+
         # 票价选择
         if driver.find_elements(by=By.ID, value='project_detail_perform_price_flowlayout'):
             for price in driver.find_elements(by=By.XPATH,
                                               value='//android.widget.TextView[@resource-id="cn.damai:id/item_text"]'):
                 if config.price in price.text:
                     price.click()
+                    break
         # 提交
         if driver.find_elements(by=By.ID, value='btn_buy_bottom_div_line'):
             driver.find_element(by=By.XPATH,
