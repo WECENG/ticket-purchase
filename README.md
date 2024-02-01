@@ -178,7 +178,7 @@ export APPIUM_SKIP_CHROMEDRIVER_INSTALL=true
 appium --use-plugins uiautomator2
 ```
 
-启动成功讲出现如下信息：
+启动成功将出现如下信息：
 
 ```
 [Appium] Welcome to Appium v2.2.1 (REV 2176894a5be5da17a362bf3f20678641a78f4b69)
@@ -213,7 +213,7 @@ appium --use-plugins uiautomator2
 - 安装
 
   ```shell
-  pip3 install appium-puthon-client
+  pip3 install appium-python-client
   ```
 
 - 在代码中引入并使用appium
