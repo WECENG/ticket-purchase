@@ -113,46 +113,19 @@ class Concert:
         if self.status == 2:
             print("*******************************\n")
             print("***选定城市***\n")
-            if self.driver.find_elements(value='citys', by=By.CLASS_NAME) and self.config.city is not None:
+            if self.driver.find_elements(value='bui-dm-tour', by=By.CLASS_NAME) and self.config.city is not None:
                 # 如果可以选择场次
-                city_name_element_list = self.driver.find_element(value='citylist', by=By.CLASS_NAME).find_elements(
-                    value='cityitem', by=By.CLASS_NAME)
+                city_name_element_list = self.driver.find_element(value='bui-dm-tour', by=By.CLASS_NAME).find_elements(
+                    value='tour-card', by=By.CLASS_NAME)
                 for city_name_element in city_name_element_list:
                     if self.config.city in city_name_element.text:
                         city_name_element.click()
                         break
-            print("***选定场次***\n")
-            if self.driver.find_elements(value='perform__order__select__performs',
-                                         by=By.CLASS_NAME) and self.config.date is not None:
-                # 如果可以选择场次
-                order_name_element_list = self.driver.find_element(value='perform__order__select__performs',
-                                                                   by=By.CLASS_NAME).find_elements(
-                    value='select_right_list_item', by=By.CLASS_NAME)
-                for order_name_element in order_name_element_list:
-                    if self.config.date in order_name_element.text:
-                        order_name_element.click()
-                        break
-            print("***选定票档***\n")
-            if self.driver.find_elements(value='perform__order__select',
-                                         by=By.CLASS_NAME) and self.config.price is not None:
-                # 如果可以选择票档
-                sku_name_element_list = self.driver.find_elements(value='skuname',
-                                                                  by=By.CLASS_NAME)
-                for sku_name_element in sku_name_element_list:
-                    if self.config.price in sku_name_element.text:
-                        sku_name_element.click()
-                        break
-            print("***选定人数***\n")
-            if self.driver.find_elements(value='number_right_info', by=By.CLASS_NAME):
-                # 如果可以选人数
-                for i in range(len(self.config.users) - 1):
-                    self.driver.find_element(value='cafe-c-input-number-handler-up',
-                                             by=By.CLASS_NAME).click()
             while self.driver.title.find('订单确认页') == -1:
                 try:
-                    buy_button = self.driver.find_element(value='buybtn',
+                    buy_button = self.driver.find_element(value='buy__button__text',
                                                           by=By.CLASS_NAME).text if self.driver.find_elements(
-                        value='buybtn', by=By.CLASS_NAME) else None
+                        value='buy__button__text', by=By.CLASS_NAME) else None
                     by_link = self.driver.find_element(value='buy-link',
                                                        by=By.CLASS_NAME).text if self.driver.find_elements(
                         value='buy-link', by=By.CLASS_NAME) else None
@@ -163,11 +136,13 @@ class Concert:
                         print('***抢票未开始，刷新等待开始***\n')
                         continue
                     elif buy_button == "立即预订":
-                        self.driver.find_element(value='buybtn', by=By.CLASS_NAME).click()
+                        # 选择订单
+                        self.choice_order()
                         # 改变现有状态
                         self.status = 3
                     elif buy_button == "立即购买":
-                        self.driver.find_element(value='buybtn', by=By.CLASS_NAME).click()
+                        # 选择订单
+                        self.choice_order()
                         # 改变现有状态
                         self.status = 4
                     elif by_link == "不，立即预订" or by_link == "不，立即购买":
@@ -176,10 +151,10 @@ class Concert:
                         self.status = 4
                     # 选座购买暂时无法完成自动化
                     elif buy_button == "选座购买":
-                        self.driver.find_element(value='buybtn', by=By.CLASS_NAME).click()
+                        self.driver.find_element(value='buy__button__text', by=By.CLASS_NAME).click()
                         self.status = 5
-                except Exception:
-                    print('***未跳转到订单结算界面***\n')
+                except Exception as e:
+                    print(e)
                 title = self.driver.title
                 if title == '选座购买':
                     # 实现选座购买逻辑
@@ -190,7 +165,7 @@ class Concert:
                         print('等待...\n')
                         if self.is_element_exist('//*[@id="confirmOrder_1"]'):
                             # 实现确认订单逻辑
-                            self.check_order()
+                            self.commit_order()
                             break
 
     def choice_seat(self):
@@ -203,7 +178,47 @@ class Concert:
                 # 找到之后进行点击确认选座
                 self.driver.find_element(value='//*[@id="app"]/div[2]/div[2]/div[2]/button', by=By.XPATH).click()
 
-    def check_order(self):
+    def choice_order(self):
+        """
+        选择订单：包括场次、票档、人数
+        """
+        self.driver.find_element(value='buy__button__text', by=By.CLASS_NAME).click()
+        time.sleep(0.2)
+        print("***选定场次***\n")
+        if self.driver.find_elements(value='sku-times-card',
+                                     by=By.CLASS_NAME) and self.config.date is not None:
+            # 如果可以选择场次
+            order_name_element_list = self.driver.find_element(value='sku-times-card',
+                                                               by=By.CLASS_NAME).find_elements(
+                value='bui-dm-sku-card-item', by=By.CLASS_NAME)
+            for order_name_element in order_name_element_list:
+                if self.config.date in order_name_element.text:
+                    order_name_element.click()
+                    break
+        print("***选定票档***\n")
+        if self.driver.find_elements(value='sku-tickets-card',
+                                     by=By.CLASS_NAME) and self.config.price is not None:
+            # 如果可以选择票档
+            sku_name_element_list = self.driver.find_elements(value='item-content',
+                                                              by=By.CLASS_NAME)
+            for sku_name_element in sku_name_element_list:
+                if self.config.price in sku_name_element.text:
+                    sku_name_element.click()
+                    break
+        print("***选定人数***\n")
+        if self.driver.find_element(value='bui-dm-sku-counter', by=By.CLASS_NAME):
+            # 如果可以选人数
+            for i in range(len(self.config.users) - 1):
+                # js点击 [0]是减，[1]是加
+                self.driver.execute_script(
+                    'document.getElementsByClassName("number-edit-bg")[1].click();')
+        # 点击确定
+        self.driver.find_element(value='bui-btn-contained', by=By.CLASS_NAME).click()
+
+    def commit_order(self):
+        """
+        提交订单
+        """
         if self.status in [3, 4, 5]:
             print('***开始确认订单***\n')
             try:
