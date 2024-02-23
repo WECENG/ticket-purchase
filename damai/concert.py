@@ -167,6 +167,8 @@ class Concert:
                             # 实现确认订单逻辑
                             self.commit_order()
                             break
+                else:
+                    print('***抢票未开始，刷新等待开始***\n')
 
     def choice_seat(self):
         while self.driver.title == '选座购买':
