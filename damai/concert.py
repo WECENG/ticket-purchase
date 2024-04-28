@@ -144,15 +144,20 @@ class Concert:
                         # 选择订单
                         self.choice_order()
                         # 改变现有状态
-                        self.status = 4
+                        self.status = 3
+                    elif buy_button == "缺货登记" and self.config.if_listen:
+                        # 选择订单
+                        self.choice_order()
+                        # 改变现有状态
+                        self.status = 3
                     elif by_link == "不，立即预订" or by_link == "不，立即购买":
                         self.driver.find_element(value='buy-link', by=By.CLASS_NAME).click()
                         # 改变现有状态
-                        self.status = 4
+                        self.status = 3
                     # 选座购买暂时无法完成自动化
                     elif buy_button == "选座购买":
                         self.driver.find_element(value='buy__button__text', by=By.CLASS_NAME).click()
-                        self.status = 5
+                        self.status = 3
                 except Exception as e:
                     print(e)
                 title = self.driver.title
@@ -165,10 +170,15 @@ class Concert:
                         print('等待...\n')
                         if self.is_element_exist('//*[@id="confirmOrder_1"]'):
                             # 实现确认订单逻辑
-                            self.commit_order()
-                            break
+                            try:
+                                self.commit_order()
+                                break
+                            except Exception:
+                                self.driver.refresh()
                 else:
                     print('***抢票未开始，刷新等待开始***\n')
+                    time.sleep(1)
+                    self.driver.refresh()
 
     def choice_seat(self):
         while self.driver.title == '选座购买':
@@ -188,27 +198,37 @@ class Concert:
         time.sleep(0.2)
         print("***选定场次***\n")
         if self.driver.find_elements(value='sku-times-card',
-                                     by=By.CLASS_NAME) and self.config.date is not None:
+                                     by=By.CLASS_NAME) and self.config.dates is not []:
             # 如果可以选择场次
             order_name_element_list = self.driver.find_element(value='sku-times-card',
                                                                by=By.CLASS_NAME).find_elements(
                 value='bui-dm-sku-card-item', by=By.CLASS_NAME)
-            for order_name_element in order_name_element_list:
-                if self.config.date in order_name_element.text:
-                    order_name_element.click()
+            match = False
+            for date in self.config.dates:
+                for order_name_element in order_name_element_list:
+                    if date in order_name_element.text and '无票' not in order_name_element.text:
+                        order_name_element.click()
+                        match = True
+                        break
+                if match is True:
                     break
         print("***选定票档***\n")
         if self.driver.find_elements(value='sku-tickets-card',
-                                     by=By.CLASS_NAME) and self.config.price is not None:
+                                     by=By.CLASS_NAME) and self.config.prices is not []:
             # 如果可以选择票档
             sku_name_element_list = self.driver.find_elements(value='item-content',
                                                               by=By.CLASS_NAME)
-            for sku_name_element in sku_name_element_list:
-                if self.config.price in sku_name_element.text:
-                    sku_name_element.click()
+            match = False
+            for price in self.config.prices:
+                for sku_name_element in sku_name_element_list:
+                    if price in sku_name_element.text and '缺' not in sku_name_element.text:
+                        sku_name_element.click()
+                        match = True
+                        break
+                if match is True:
                     break
         print("***选定人数***\n")
-        if self.driver.find_element(value='bui-dm-sku-counter', by=By.CLASS_NAME):
+        if self.driver.find_elements(value='bui-dm-sku-counter', by=By.CLASS_NAME):
             # 如果可以选人数
             for i in range(len(self.config.users) - 1):
                 # js点击 [0]是减，[1]是加
@@ -221,7 +241,7 @@ class Concert:
         """
         提交订单
         """
-        if self.status in [3, 4, 5]:
+        if self.status in [3]:
             print('***开始确认订单***\n')
             try:
                 # 选购票人信息

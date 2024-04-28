@@ -20,8 +20,9 @@ def load_config():
                   config['target_url'],
                   config['users'],
                   config['city'],
-                  config['date'],
-                  config['price'],
+                  config['dates'],
+                  config['prices'],
+                  config['if_listen'],
                   config['if_commit_order'])
 
 
