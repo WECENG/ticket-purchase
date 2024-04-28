@@ -65,9 +65,10 @@ pip3 install selenium
 - `target_url`为用户需要抢的演唱会票的目标地址，**待修改**
 - `users`为观演人的姓名，**观演人需要用户在手机大麦APP中先填写好，然后再填入该配置文件中**，**待修改**
 - `city`为城市，**如果用户需要抢的演唱会票需要选择城市，请把城市填入此处。如无需选择，则不填**
-- `date`为场次日期，**待修改**
-- `price`为票档的价格，**待修改**
+- `date`为场次日期，**待修改，可多选**
+- `price`为票档的价格，**待修改，可多选**
 - `if_commit_order`为是否要自动提交订单，**改成 true**
+- if_listen为是否回流监听，**改成true**
 
 
 
@@ -95,6 +96,7 @@ pip3 install selenium
   "city": "广州",
   "date": "2023-10-28",
   "price": "1039",
+  "if_listen":true,
   "if_commit_order": true
 }
 ```
