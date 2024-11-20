@@ -1,20 +1,17 @@
 {
   "index_url": "https://www.damai.cn/",
   "login_url": "https://passport.damai.cn/login?ru=https%3A%2F%2Fwww.damai.cn%2F",
-  "target_url": "https://m.damai.cn/shows/item.html?from=def&itemId=779925862781&sqm=dianying.h5.unknown.value&spm=a2o71.category_singconcert.toursnatchticket.city_2",
+  "target_url": "https://detail.damai.cn/item.htm?id=848803807571&clicktitle=TOGENASHI+TOGEARI+Live+in+SHANGHAI%E3%80%8C%E5%87%9B%E9%9F%B3%E3%81%AE%E7%90%86%E3%80%8D",
   "users": [
-    "姓名1",
-    "姓名2"
+    "宋炜全"
   ],
-  "city": "南京",
+  "city": "",
   "dates": [
-    "2024-05-11",
-    "2024-05-12"
+    "2024-12-15"
   ],
   "prices": [
-    "580",
-    "780"
+    "480"
   ],
   "if_listen": true,
-  "if_commit_order": false
+  "if_commit_order": true
 }
