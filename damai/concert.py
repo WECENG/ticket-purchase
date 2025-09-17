@@ -20,10 +20,10 @@ class Concert:
         self.config = config
         self.status = 0  # 状态,表示如今进行到何种程度
         self.login_method = 1  # {0:模拟登录,1:Cookie登录}自行选择登录方式
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_experimental_option("excludeSwitches", ['enable-automation'])
-        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
-        self.driver = webdriver.Chrome(options=chrome_options)  # 默认Chrome浏览器
+        edge_options = webdriver.EdgeOptions()
+        edge_options.add_experimental_option("excludeSwitches", ['enable-automation'])
+        edge_options.add_argument('--disable-blink-features=AutomationControlled')
+        self.driver = webdriver.Edge(options=edge_options)  # 默认Chrome浏览器
 
     def set_cookie(self):
         """
