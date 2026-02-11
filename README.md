@@ -1,252 +1,317 @@
-# 大麦抢票脚本 V1.0
-### 特征
+# 大麦抢票自动化系统
 
-- 自动无延时抢票
-- 支持人员、城市、日期场次、价格选择
+一个基于Selenium和Appium的大麦网抢票自动化工具，支持Web端和移动端抢票。
 
 ## 功能介绍
 通过selenium打开页面登录，模拟用户购票流程自动购票
 
-其流程图如下:
+- **双端支持**：支持Web端（Selenium）和移动端（Appium）抢票
+- **智能抢票**：自动选择城市、票价、观演人员
+- **高性能**：优化的点击策略，适合抢票场景
+- **可配置**：灵活的配置文件，支持多种演出设置
+- **重试机制**：内置重试逻辑，提高成功率
 
-<img src="img/大麦抢票流程.png" width="50%" height="50%" />
+## 📋 系统要求
 
-## 准备工作
-### 1. 配置环境
+### 基础环境
+- **Python**: 3.9+
+- **Node.js**: 20.19.0+ 或 22.12.0+ 或 24.0.0+
+- **操作系统**: macOS / Windows / Linux
 
-#### 1.1安装python3环境
+### Web端抢票
+- **Chrome浏览器**: 最新版本
+- **ChromeDriver**: 自动下载
 
-**Windows**
+### 移动端抢票
+- **Android SDK**: 已配置环境变量
+- **Appium**: 3.1.0+
+- **Android设备**: 真机或模拟器
 
-1. 访问Python官方网站：https://www.python.org/downloads/windows/
-2. 下载最新的Python 3.9+版本的安装程序。
-3. 运行安装程序。
-4. 在安装程序中，确保勾选 "Add Python X.X to PATH" 选项，这将自动将Python添加到系统环境变量中，方便在命令行中使用Python。
-5. 完成安装后，你可以在命令提示符或PowerShell中输入 `python3` 来启动Python解释器。
+## 🛠️ 安装指南
 
-**macOS**
-
-1. 你可以使用Homebrew来安装Python 3。
-
-   - 安装Homebrew（如果未安装）：打开终端并运行以下命令：
-
-     ```shell
-     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-     ```
-
-   - 安装Python 3：运行以下命令来安装Python 3：
-
-     ```shell
-     brew install python@3
-     ```
-
-#### 1.2 安装所需要的环境
-
-在命令窗口输入如下指令
-
-```shell
-pip3 install selenium
+### 1. 克隆项目
+```bash
+git clone <repository-url>
+cd ticket-purchase
 ```
 
-#### 1.3 下载google chrome浏览器
+### 2. 安装Python依赖
+```bash
+# 使用Poetry（推荐）
+poetry install
 
-下载地址: https://www.google.cn/intl/zh-CN/chrome/?brand=YTUH&gclid=Cj0KCQjwj5mpBhDJARIsAOVjBdoV_1sBwdqKGHV3rUU1vJmNKZdy5QNzbRT8F5O0-_jq1WHXurE8a7MaAkWrEALw_wcB&gclsrc=aw.ds
+# 或使用pip
+pip install -r requirements.txt
+```
 
-### 2. 修改配置文件
+### 3. 移动端环境配置（仅移动端抢票需要）
 
-在运行程序之前，需要先修改`config.json`文件。该文件用于指定用户需要抢票的相关信息，包括演唱会的场次、观演的人员、城市、日期、价格等。文件结果如下图所示：
+#### 3.1 安装Node.js
+```bash
+# macOS (使用Homebrew)
+brew install node
 
-<img src="img/config_json.png" width="50%" height="50%" />
+# 验证版本（需要20.19.0+）
+node --version
+```
 
-#### 2.1 文件内容说明
+#### 3.2 安装Appium
+```bash
+# 全局安装Appium
+npm install -g appium
 
-- `index_url`为大麦网的地址，**无需修改**
-- `login_url`为大麦网的登录地址，**无需修改**
-- `target_url`为用户需要抢的演唱会票的目标地址，**待修改**
-- `users`为观演人的姓名，**观演人需要用户在手机大麦APP中先填写好，然后再填入该配置文件中**，**待修改**
-- `city`为城市，**如果用户需要抢的演唱会票需要选择城市，请把城市填入此处。如无需选择，则不填**
-- `date`为场次日期，**待修改，可多选**
-- `price`为票档的价格，**待修改，可多选**
-- `if_commit_order`为是否要自动提交订单，**改成 true**
-- if_listen为是否回流监听，**改成true**
+# 安装UiAutomator2驱动
+appium driver install uiautomator2
 
+# 验证安装
+appium --version
+```
 
+#### 3.3 配置Android环境
+```bash
+# 设置环境变量（添加到 ~/.zshrc 或 ~/.bashrc）
+export ANDROID_HOME=/path/to/your/android/sdk
+export ANDROID_SDK_ROOT=/path/to/your/android/sdk
 
-#### 2.2 示例说明
+# 验证ADB
+adb devices
+```
 
-进入大麦网https://www.damai.cn/，选择你需要抢票的演唱会。假设如下图所示：
+## ⚙️ 配置说明
 
-<img src="img/example.png" width="50%" height="50%" />
-
-接下来按照下图的标注对配置文件进行修改：
-
-<img src="img/example_detail.png" width="50%" height="50%" />
-
-最终`config.json`的文件内容如下：
+### 移动端配置 (config.jsonc)
 
 ```json
 {
-  "index_url": "https://www.damai.cn/",
-  "login_url": "https://passport.damai.cn/login?ru=https%3A%2F%2Fwww.damai.cn%2F",
-  "target_url": "https://detail.damai.cn/item.htm?spm=a2oeg.home.card_0.ditem_1.591b23e1JQGWHg&id=740680932762",
+  "server_url": "http://127.0.0.1:4723",
+  "keyword": "刘若英",
   "users": [
-    "名字1",
-    "名字2"
+    "观演人1",
+    "观演人2"
   ],
-  "city": "广州",
-  "date": "2023-10-28",
-  "price": "1039",
-  "if_listen":true,
+  "city": "泉州",
+  "date": "10.04",
+  "price": "799元",
+  "price_index": 1,
   "if_commit_order": true
 }
 ```
 
+#### 配置参数说明
 
+| 参数 | 类型 | 说明 | 示例 |
+|------|------|------|------|
+| `server_url` | string | Appium服务器地址 | `"http://127.0.0.1:4723"` |
+| `keyword` | string | 搜索关键词 | `"刘若英"` |
+| `users` | array | 观演人员名单 | `["张三", "李四"]` |
+| `city` | string | 演出城市 | `"泉州"` |
+| `date` | string | 演出日期 | `"10.04"` |
+| `price` | string | 票价描述 | `"799元"` |
+| `price_index` | number | 票价索引（从0开始） | `1` |
+| `if_commit_order` | boolean | 是否自动提交订单 | `true` |
 
-### 3.运行程序
+### Web端配置 (config.json)
 
-运行程序开始抢票，进入命令窗口，执行如下命令：
+```json
+{
+  "index_url": "https://www.damai.cn/",
+  "login_url": "https://passport.damai.cn/login",
+  "target_url": "https://detail.damai.cn/item.htm?id=xxx",
+  "users": ["张三", "李四"],
+  "city": "广州",
+  "date": "2023-10-28",
+  "price": "1039",
+  "if_commit_order": true
+}
+```
 
-```shell
+## 🚀 使用方法
+
+### 移动端抢票（推荐）
+
+#### 1. 启动Android设备
+```bash
+# 启动模拟器
+/Users/shengwang/Library/Android/sdk/emulator/emulator -avd YourAVDName
+
+# 或连接真机（需开启USB调试）
+adb devices
+```
+
+#### 2. 安装大麦APP
+在Android设备上安装大麦APP，并登录账号。
+
+#### 3. 启动Appium服务器
+```bash
+# 设置环境变量
+export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
+export ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk
+
+# 启动Appium服务器
+appium --port 4723
+```
+
+#### 4. 配置抢票参数
+编辑 `damai_appium/config.jsonc` 文件，设置：
+- 搜索关键词
+- 观演人员
+- 城市、日期、票价
+- 其他参数
+
+#### 5. 运行抢票脚本
+```bash
+cd damai_appium
+ANDROID_HOME=/Users/shengwang/Library/Android/sdk ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk python damai_app_v2.py
+```
+
+### Web端抢票
+
+#### 1. 配置参数
+编辑 `damai/config.json` 文件，设置目标演出URL和其他参数。
+
+#### 2. 运行抢票脚本
+```bash
 cd damai
-python3 damai.py
+python damai.py
 ```
 
+## 🔧 故障排除
 
+### 常见问题
 
-# 大麦app抢票
-
-大麦app抢票脚本需要依赖appium，因此需要现在安装appium server&client环境，步骤如下：
-
-## appium server
-
-### 下载
-
-- 先安装好node环境（具备npm）node版本号18.0.0
-
-- 先下载并安装好android sdk，并配置环境变量（appium server运行需依赖android sdk)
-
-- 下载appium
-
-  ```shell
-  npm install -g appium
-  ```
-
-- 查看appium是否安装成功
-
-  ```shell
-  appium -v
-  ```
-
-- 下载UiAutomator2驱动
-
-  ```shell
-  npm install appium-uiautomator2-driver
-  ```
-
-​		可能会遇到如下错误：
-
-```tex
-➜  xcode git:(master) ✗ npm install appium-uiautomator2-driver
-
-npm ERR! code 1
-npm ERR! path /Users/chenweicheng/Documents/xcode/node_modules/appium-uiautomator2-driver/node_modules/appium-chromedriver
-npm ERR! command failed
-npm ERR! command sh -c node install-npm.js
-npm ERR! [11:57:54] Error installing Chromedriver: Request failed with status code 404
-npm ERR! [11:57:54] AxiosError: Request failed with status code 404
-npm ERR!     at settle (/Users/chenweicheng/Documents/xcode/node_modules/appium-uiautomator2-driver/node_modules/axios/lib/core/settle.js:19:12)
-npm ERR!     at IncomingMessage.handleStreamEnd (/Users/chenweicheng/Documents/xcode/node_modules/appium-uiautomator2-driver/node_modules/axios/lib/adapters/http.js:572:11)
-npm ERR!     at IncomingMessage.emit (node:events:539:35)
-npm ERR!     at endReadableNT (node:internal/streams/readable:1344:12)
-npm ERR!     at processTicksAndRejections (node:internal/process/task_queues:82:21)
-npm ERR! [11:57:54] Downloading Chromedriver can be skipped by setting the'APPIUM_SKIP_CHROMEDRIVER_INSTALL' environment variable.
-
-npm ERR! A complete log of this run can be found in:
-npm ERR!     /Users/chenweicheng/.npm/_logs/2023-10-26T03_57_35_950Z-debug-0.log
+#### 1. Node.js版本不兼容
+```
+Error: Node version must be at least ^20.19.0 || ^22.12.0 || >=24.0.0
+```
+**解决方案**：升级Node.js到兼容版本
+```bash
+# macOS
+brew upgrade node
 ```
 
-​		解决办法（添加环境变量，错误原因是没有找到chrome浏览器驱动，忽略即可）
-
-```shell
-export APPIUM_SKIP_CHROMEDRIVER_INSTALL=true
+#### 2. Android环境变量未设置
+```
+Error: Neither ANDROID_HOME nor ANDROID_SDK_ROOT environment variable was exported
+```
+**解决方案**：设置环境变量
+```bash
+export ANDROID_HOME=/path/to/android/sdk
+export ANDROID_SDK_ROOT=/path/to/android/sdk
 ```
 
-### 启动
+#### 3. 设备连接问题
+```
+Error: Unable to find an active device or emulator
+```
+**解决方案**：
+- 检查设备连接：`adb devices`
+- 确保设备已开启USB调试
+- 检查Android版本是否匹配
 
-启动appium server并使用uiautomator2驱动
+#### 4. Appium连接失败
+```
+Error: Connection refused
+```
+**解决方案**：
+- 确保Appium服务器正在运行
+- 检查端口4723是否被占用
+- 验证服务器地址配置
 
-```shell
-appium --use-plugins uiautomator2
+### 调试技巧
+
+#### 1. 检查设备状态
+```bash
+# 检查连接的设备
+adb devices
+
+# 检查设备Android版本
+adb shell getprop ro.build.version.release
+
+# 检查设备是否完全启动
+adb shell getprop sys.boot_completed
 ```
 
-启动成功将出现如下信息：
-
-```
-[Appium] Welcome to Appium v2.2.1 (REV 2176894a5be5da17a362bf3f20678641a78f4b69)
-[Appium] Non-default server args:
-[Appium] {
-[Appium]   usePlugins: [
-[Appium]     'uiautomator2'
-[Appium]   ]
-[Appium] }
-[Appium] Attempting to load driver uiautomator2...
-[Appium] Requiring driver at /Users/chenweicheng/Documents/xcode/node_modules/appium-uiautomator2-driver
-[Appium] Appium REST http interface listener started on http://0.0.0.0:4723
-[Appium] You can provide the following URLs in your client code to connect to this server:
-[Appium] 	http://127.0.0.1:4723/ (only accessible from the same host)
-[Appium] 	http://172.31.102.45:4723/
-[Appium] 	http://198.18.0.1:4723/
-[Appium] Available drivers:
-[Appium]   - uiautomator2@2.32.3 (automationName 'UiAutomator2')
-[Appium] No plugins have been installed. Use the "appium plugin" command to install the one(s) you want to use.
+#### 2. 验证Appium连接
+```bash
+# 检查Appium服务器状态
+curl http://127.0.0.1:4723/status
 ```
 
-其中`[Appium] 	http://127.0.0.1:4723/ (only accessible from the same host)
-[Appium] 	http://172.31.102.45:4723/
-[Appium] 	http://198.18.0.1:4723/`为appium server连接地址
+#### 3. 查看应用包名
+```bash
+# 查看已安装的应用
+adb shell pm list packages | grep damai
+```
 
+## 📁 项目结构
 
+```
+ticket-purchase/
+├── damai/                    # Web端抢票
+│   ├── damai.py             # 主程序
+│   ├── config.py            # 配置类
+│   ├── config.json          # 配置文件
+│   └── requirements.txt      # 依赖文件
+├── damai_appium/             # 移动端抢票
+│   ├── damai_app_v2.py      # 优化版主程序
+│   ├── damai_app.py         # 原版主程序
+│   ├── config.py            # 配置类
+│   ├── config.jsonc         # 配置文件
+│   └── app.md               # 应用说明
+├── tests/                    # 测试文件
+├── doc/                      # 文档
+├── img/                      # 图片资源
+└── README.md                 # 说明文档
+```
 
-## appium client
+## 🎯 使用流程
 
-- 先下载并安装好python3和pip3
+### 移动端抢票完整流程
 
-- 安装
+1. **环境准备**
+   - 安装Node.js (20.19.0+)
+   - 安装Appium和驱动
+   - 配置Android SDK环境变量
 
-  ```shell
-  pip3 install appium-python-client
-  ```
+2. **设备准备**
+   - 启动Android模拟器或连接真机
+   - 安装大麦APP并登录
 
-- 在代码中引入并使用appium
+3. **配置参数**
+   - 编辑 `config.jsonc` 文件
+   - 设置演出信息、观演人员等
 
-  ```python
-  from appium import webdriver
-  from appium.options.common.base import AppiumOptions
-  
-  device_app_info = AppiumOptions()
-  device_app_info.set_capability('platformName', 'Android')
-  device_app_info.set_capability('platformVersion', '10')
-  device_app_info.set_capability('deviceName', 'YourDeviceName')
-  device_app_info.set_capability('appPackage', 'cn.damai')
-  device_app_info.set_capability('appActivity', '.launcher.splash.SplashMainActivity')
-  device_app_info.set_capability('unicodeKeyboard', True)
-  device_app_info.set_capability('resetKeyboard', True)
-  device_app_info.set_capability('noReset', True)
-  device_app_info.set_capability('newCommandTimeout', 6000)
-  device_app_info.set_capability('automationName', 'UiAutomator2')
-  
-  # 连接appium server，server地址查看appium启动信息
-  driver = webdriver.Remote('http://127.0.0.1:4723', options=device_app_info)
-  
-  ```
+4. **启动服务**
+   - 启动Appium服务器
+   - 验证设备连接
 
-- 启动脚本程序
+5. **执行抢票**
+   - 在模拟器上打开大麦APP
+   - 搜索目标演出
+   - 运行抢票脚本
 
-  ```shell
-  cd damai_appium
-  python3 damai_appium.py
-  ```
+6. **监控结果**
+   - 脚本自动执行抢票流程
+   - 查看控制台输出
+   - 检查订单状态
 
-  
+## ⚠️ 注意事项
 
+1. **合法使用**：请遵守大麦网的使用条款，合理使用自动化工具
+2. **账号安全**：建议使用专门的测试账号
+3. **网络环境**：确保网络连接稳定
+4. **设备性能**：建议使用性能较好的设备进行抢票
+5. **时间设置**：提前设置好抢票时间，确保脚本在开售时间运行
+
+## 🤝 贡献指南
+
+欢迎提交Issue和Pull Request来改进项目。
+
+## 📄 许可证
+
+本项目仅供学习和研究使用，请勿用于商业用途。
+
+---
+
+**最后更新**: 2024年10月
+**版本**: 2.0.0

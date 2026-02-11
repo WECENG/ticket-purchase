@@ -1,20 +1,19 @@
 {
   "index_url": "https://www.damai.cn/",
   "login_url": "https://passport.damai.cn/login?ru=https%3A%2F%2Fwww.damai.cn%2F",
-  "target_url": "https://m.damai.cn/shows/item.html?from=def&itemId=779925862781&sqm=dianying.h5.unknown.value&spm=a2o71.category_singconcert.toursnatchticket.city_2",
+  "target_url": "https://detail.damai.cn/item.htm?spm=a2oeg.search_category.0.0.34254d15rarUTD&id=1015510957565&clicktitle=%E6%AC%A2%E5%AD%90%E3%80%8C%E6%88%91%E7%9A%84%E9%9D%92%E6%98%A5%E6%9C%89%E4%BD%A0%E3%80%8D2026%E5%B7%A1%E5%9B%9E%E6%BC%94%E5%94%B1%E4%BC%9A-%E6%9D%AD%E5%B7%9E%E7%AB%99",
   "users": [
-    "姓名1",
-    "姓名2"
+    "陈伟成",
+    "李晓婷"
   ],
-  "city": "南京",
+  "city": "杭州",
   "dates": [
-    "2024-05-11",
-    "2024-05-12"
+    "2026-04-11"
   ],
   "prices": [
-    "580",
-    "780"
+    "680"
   ],
   "if_listen": true,
-  "if_commit_order": false
+  "if_commit_order": false,
+  "max_retries": 10000
 }

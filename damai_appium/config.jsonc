@@ -1,12 +1,13 @@
 {
   "server_url": "http://127.0.0.1:4723",
-  "keyword": "陈粒",
+  "keyword": "周深",
   "users": [
     "王胜",
     "潘鸿运"
   ],
   "city": "深圳",
   "date": "12.06",
-  "price": "看台799元",
-  "if_commit_order": false
+  "price": "内场1199元",
+  "price_index": 5,
+  "if_commit_order": true
 }
