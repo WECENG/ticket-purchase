@@ -151,7 +151,7 @@ class DamaiBot:
     def two_stage_click(self, text_value, timeout=3):
         """两级匹配点击：先精确 text()，失败后用 textContains()，仍失败 dump 页面文本"""
         # Stage 1: 精确匹配
-        logging.info(f"  尝试精确匹配: "{text_value}"")
+        logging.info("  尝试精确匹配: " + repr(text_value))
         try:
             el = WebDriverWait(self.driver, timeout).until(
                 EC.presence_of_element_located(
@@ -164,13 +164,13 @@ class DamaiBot:
                 "y": rect["y"] + rect["height"] // 2,
                 "duration": 50,
             })
-            logging.info(f"  >>> 精确匹配成功: "{text_value}"")
+            logging.info("  >>> 精确匹配成功: " + repr(text_value))
             return True
         except TimeoutException:
             pass
 
         # Stage 2: 模糊匹配
-        logging.info(f"  尝试模糊匹配: 包含 "{text_value}"")
+        logging.info("  尝试模糊匹配: 包含 " + repr(text_value))
         try:
             el = WebDriverWait(self.driver, timeout).until(
                 EC.presence_of_element_located(
@@ -184,23 +184,23 @@ class DamaiBot:
                 "y": rect["y"] + rect["height"] // 2,
                 "duration": 50,
             })
-            logging.info(f"  >>> 模糊匹配成功: "{actual_text}"")
+            logging.info("  >>> 模糊匹配成功: " + repr(actual_text))
             return True
         except TimeoutException:
             pass
 
         # Stage 3: Dump visible text for debugging
-        logging.warning(f"  >>> 两级匹配均失败，dump 页面文本用于排查...")
+        logging.warning("  >>> 两级匹配均失败，dump 页面文本用于排查...")
         try:
             xml = self.driver.page_source
             import re as _re_dump
             texts = _re_dump.findall(r'text="([^"]*)"', xml)
             visible = [t for t in texts if t.strip() and len(t.strip()) > 1]
-            logging.warning(f"  页面上可见文本 ({len(visible)} 条):")
+            logging.warning("  页面上可见文本 ({} 条):".format(len(visible)))
             for t in visible[:30]:
-                logging.warning(f"    - "{t}"")
+                logging.warning("    - " + repr(t))
             if len(visible) > 30:
-                logging.warning(f"    ... 还有 {len(visible) - 30} 条")
+                logging.warning("    ... 还有 {} 条".format(len(visible) - 30))
         except Exception:
             pass
         return False
