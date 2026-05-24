@@ -13,10 +13,12 @@ import time
 from concert import Concert
 from config import Config
 
+_config_dir = os.path.dirname(__file__)
+
 
 def check_config_file():
     """检查配置文件是否存在和有效"""
-    config_file = 'config.json'
+    config_file = os.path.join(_config_dir, 'config.json')
 
     if not os.path.exists(config_file):
         print("=" * 50)
@@ -70,7 +72,7 @@ def check_config_file():
 
 
 def load_config():
-    with open('config.json', 'r', encoding='utf-8') as config_file:
+    with open(os.path.join(_config_dir, 'config.json'), 'r', encoding='utf-8') as config_file:
         config = json.load(config_file)
     return Config(
         config['index_url'],

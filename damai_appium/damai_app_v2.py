@@ -123,6 +123,8 @@ class DamaiBot:
             if i < len(coordinates) - 1:
                 time.sleep(0.01)
             print(f"点击用户: {value}")
+        return len(coordinates) > 0
+
 
     def smart_wait_and_click(self, by, value, backup_selectors=None, timeout=1.5):
         """智能等待和点击 - 支持备用选择器"""
@@ -270,7 +272,8 @@ class DamaiBot:
             user_clicks = [(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{user}")') for user in
                            self.config.users]
             # self.batch_click(user_clicks, delay=0.05)  # 极短延迟
-            self.ultra_batch_click(user_clicks)
+            if not self.ultra_batch_click(user_clicks):
+                return False
 
             # 7. 提交订单
             print("提交订单...")
@@ -317,14 +320,8 @@ class DamaiBot:
 
 # 使用示例
 if __name__ == "__main__":
-    import json as _j2
-    with open("config.jsonc", "r", encoding="utf-8") as _f: _r = _f.read()
-    _ls = [l for l in _r.split(chr(10)) if not l.strip().startswith("//") and "_comment" not in l]
-    _r = chr(10).join(_ls)
-    _r = re.sub(r",\\s*}", "}", _r)
-    _r = re.sub(r",\\s*]", "]", _r)
-    _cfg = _j2.loads(_r)
-    auto_bt = _cfg.get("auto_buy_time", None)
+    bot = DamaiBot()
+    auto_bt = bot.config.auto_buy_time
     if auto_bt:
         from datetime import datetime
         parts = auto_bt.split(":")
@@ -335,6 +332,4 @@ if __name__ == "__main__":
             time.sleep(wait)
         else:
             print(f"{auto_bt} passed, starting now")
-
-    bot = DamaiBot()
     bot.run_with_retry(max_retries=3)
