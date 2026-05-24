@@ -148,6 +148,62 @@ class DamaiBot:
                 continue
         return False
 
+    def two_stage_click(self, text_value, timeout=3):
+        """两级匹配点击：先精确 text()，失败后用 textContains()，仍失败 dump 页面文本"""
+        # Stage 1: 精确匹配
+        logging.info(f"  尝试精确匹配: "{text_value}"")
+        try:
+            el = WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located(
+                    (AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{text_value}")')
+                )
+            )
+            rect = el.rect
+            self.driver.execute_script("mobile: clickGesture", {
+                "x": rect["x"] + rect["width"] // 2,
+                "y": rect["y"] + rect["height"] // 2,
+                "duration": 50,
+            })
+            logging.info(f"  >>> 精确匹配成功: "{text_value}"")
+            return True
+        except TimeoutException:
+            pass
+
+        # Stage 2: 模糊匹配
+        logging.info(f"  尝试模糊匹配: 包含 "{text_value}"")
+        try:
+            el = WebDriverWait(self.driver, timeout).until(
+                EC.presence_of_element_located(
+                    (AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().textContains("{text_value}")')
+                )
+            )
+            actual_text = el.text or el.get_attribute("text") or "(hidden)"
+            rect = el.rect
+            self.driver.execute_script("mobile: clickGesture", {
+                "x": rect["x"] + rect["width"] // 2,
+                "y": rect["y"] + rect["height"] // 2,
+                "duration": 50,
+            })
+            logging.info(f"  >>> 模糊匹配成功: "{actual_text}"")
+            return True
+        except TimeoutException:
+            pass
+
+        # Stage 3: Dump visible text for debugging
+        logging.warning(f"  >>> 两级匹配均失败，dump 页面文本用于排查...")
+        try:
+            xml = self.driver.page_source
+            import re as _re_dump
+            texts = _re_dump.findall(r'text="([^"]*)"', xml)
+            visible = [t for t in texts if t.strip() and len(t.strip()) > 1]
+            logging.warning(f"  页面上可见文本 ({len(visible)} 条):")
+            for t in visible[:30]:
+                logging.warning(f"    - "{t}"")
+            if len(visible) > 30:
+                logging.warning(f"    ... 还有 {len(visible) - 30} 条")
+        except Exception:
+            pass
+        return False
 
     def extract_sale_time(self):
         try:
@@ -187,14 +243,9 @@ class DamaiBot:
             # 0.5 Auto-extract sale time
             self.extract_sale_time()
 
-            # 1. 城市选择 - 准备多个备选方案
+            # 1. 城市选择 - 两级匹配（先精确后模糊，失败时 dump 页面文本）
             logging.info("选择城市...")
-            city_selectors = [
-                (AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{self.config.city}")'),
-                (AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().textContains("{self.config.city}")'),
-                (By.XPATH, f'//*[@text="{self.config.city}"]')
-            ]
-            if not self.smart_wait_and_click(*city_selectors[0], city_selectors[1:]):
+            if not self.two_stage_click(self.config.city, timeout=3):
                 logging.warning("城市选择失败")
                 return False
 
