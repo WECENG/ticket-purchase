@@ -6,7 +6,7 @@ __Description__ = "大麦app抢票自动化 - 优化版"
 __Created__ = 2025/09/13 19:27
 """
 
-import time
+import time, re, os
 from appium import webdriver
 from appium.options.common.base import AppiumOptions
 from appium.webdriver.common.appiumby import AppiumBy
@@ -29,10 +29,10 @@ class DamaiBot:
         """初始化驱动配置"""
         capabilities = {
             "platformName": "Android",  # 操作系统
-            "platformVersion": "16",  # 系统版本
-            "deviceName": "emulator-5554",  # 设备名称
+            "platformVersion": self.config.platform_version or "12",  # 系统版本
+            "deviceName": self.config.device_name or "57e97d81",  # 设备名称
             "appPackage": "cn.damai",  # app 包名
-            "appActivity": ".launcher.splash.SplashMainActivity",  # app 启动 Activity
+            "appActivity": ".launcher.splash.SplashActivity",  # app 启动 Activity
             "unicodeKeyboard": True,  # 支持 Unicode 输入
             "resetKeyboard": True,  # 隐藏键盘
             "noReset": True,  # 不重置 app
@@ -144,11 +144,44 @@ class DamaiBot:
                 continue
         return False
 
+
+    def extract_sale_time(self):
+        try:
+            time.sleep(1)
+            xml = self.driver.page_source
+            import re as _re2
+            texts = _re2.findall(r"text=\"([^\"]+)\"", xml)
+            all_t = " ".join(texts)
+            p1 = re.compile(r"\\d{1,2}\\u6708\\d{1,2}\\u65e5\\s*\\d{1,2}:\\d{2}")
+            p2 = re.compile(r"\\d{1,2}:\\d{2}")
+            for pat in [p1, p2]:
+                m2 = pat.search(all_t)
+                if m2:
+                    g = m2.groups()
+                    st = g[-2].zfill(2) + ":" + g[-1].zfill(2) + ":00", 
+                    print(f"  >>> Auto-detected sale time: {st} <<<")
+                    cp = os.path.join(os.path.dirname(__file__), "config.jsonc")
+                    with open(cp, "r", encoding="utf-8") as f2:
+                        ct = f2.read()
+                    old_at = re.search(r"\"auto_buy_time\":\\s*\"[^\"]*\"", ct)
+                    if old_at:
+                        ct = ct[:old_at.start()] + "\"auto_buy_time\": \"" + st + "\"" + ct[old_at.end():]
+                    with open(cp, "w", encoding="utf-8") as f2:
+                        f2.write(ct)
+                    self.config.auto_buy_time = st
+                    return st
+            return None
+        except Exception as e:
+            print(f"  extract_sale_time err: {e}")
+            return None
     def run_ticket_grabbing(self):
         """执行抢票主流程"""
         try:
             print("开始抢票流程...")
             start_time = time.time()
+
+            # 0.5 Auto-extract sale time
+            self.extract_sale_time()
 
             # 1. 城市选择 - 准备多个备选方案
             print("选择城市...")
@@ -284,5 +317,24 @@ class DamaiBot:
 
 # 使用示例
 if __name__ == "__main__":
+    import json as _j2
+    with open("config.jsonc", "r", encoding="utf-8") as _f: _r = _f.read()
+    _ls = [l for l in _r.split(chr(10)) if not l.strip().startswith("//") and "_comment" not in l]
+    _r = chr(10).join(_ls)
+    _r = re.sub(r",\\s*}", "}", _r)
+    _r = re.sub(r",\\s*]", "]", _r)
+    _cfg = _j2.loads(_r)
+    auto_bt = _cfg.get("auto_buy_time", None)
+    if auto_bt:
+        from datetime import datetime
+        parts = auto_bt.split(":")
+        target = datetime.now().replace(hour=int(parts[0]), minute=int(parts[1]), second=int(parts[2]) if len(parts) > 2 else 0, microsecond=0)
+        wait = (target - datetime.now()).total_seconds()
+        if wait > 0:
+            print(f"Waiting {wait:.0f}s until {auto_bt}...")
+            time.sleep(wait)
+        else:
+            print(f"{auto_bt} passed, starting now")
+
     bot = DamaiBot()
     bot.run_with_retry(max_retries=3)

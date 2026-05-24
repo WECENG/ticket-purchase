@@ -21,9 +21,9 @@ device_app_info = AppiumOptions()
 # 操作系统
 device_app_info.set_capability('platformName', 'Android')
 # 操作系统版本
-device_app_info.set_capability('platformVersion', '10')
+device_app_info.set_capability('platformVersion', '12')
 # 设备名称
-device_app_info.set_capability('deviceName', 'YourDeviceName')
+device_app_info.set_capability('deviceName', '57e97d81')
 # app package
 device_app_info.set_capability('appPackage', 'cn.damai')
 # app activity name

@@ -1,13 +1,16 @@
 {
+  "_comment": "=== 邓紫棋 南昌 08.08 ===",
+  "_comment_safe": "if_commit_order=false 不提交订单",
+
   "server_url": "http://127.0.0.1:4723",
-  "keyword": "周深",
-  "users": [
-    "王胜",
-    "潘鸿运"
-  ],
-  "city": "深圳",
-  "date": "12.06",
-  "price": "内场1199元",
-  "price_index": 5,
-  "if_commit_order": true
+  "keyword": "邓紫棋",
+  "users": ["张家华", "徐杭"],
+  "city": "南昌",
+  "date": "08.08",
+  "price": "开台380",
+  "price_index": 1,
+  "if_commit_order": false,
+  "auto_buy_time": "",
+  "device_name": "57e97d81",
+  "platform_version": "12"
 }

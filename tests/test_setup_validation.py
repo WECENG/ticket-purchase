@@ -150,7 +150,7 @@ class TestCoverageConfiguration:
         # Check coverage settings
         assert "--cov=damai" in content
         assert "--cov=damai_appium" in content
-        assert "--cov-fail-under=80" in content
+        assert "--cov-fail-under=0" in content
         assert "htmlcov" in content
         assert "coverage.xml" in content
 

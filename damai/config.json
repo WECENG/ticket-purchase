@@ -1,17 +1,20 @@
 {
+  "_comment": "=== Web端配置 - 邓紫棋 南昌 08.08 ===",
+  "_comment_note": "if_commit_order=false 仅模拟流程，不会真正下单",
+
   "index_url": "https://www.damai.cn/",
   "login_url": "https://passport.damai.cn/login?ru=https%3A%2F%2Fwww.damai.cn%2F",
-  "target_url": "https://detail.damai.cn/item.htm?spm=a2oeg.search_category.0.0.34254d15rarUTD&id=1015510957565&clicktitle=%E6%AC%A2%E5%AD%90%E3%80%8C%E6%88%91%E7%9A%84%E9%9D%92%E6%98%A5%E6%9C%89%E4%BD%A0%E3%80%8D2026%E5%B7%A1%E5%9B%9E%E6%BC%94%E5%94%B1%E4%BC%9A-%E6%9D%AD%E5%B7%9E%E7%AB%99",
+  "target_url": "https://detail.damai.cn/item.htm?id=请替换为实际演出ID",
   "users": [
-    "陈伟成",
-    "李晓婷"
+    "张家华",
+    "徐杭"
   ],
-  "city": "杭州",
+  "city": "南昌",
   "dates": [
-    "2026-04-11"
+    "2026-08-08"
   ],
   "prices": [
-    "680"
+    "380"
   ],
   "if_listen": true,
   "if_commit_order": false,

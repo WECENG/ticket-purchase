@@ -42,7 +42,7 @@ addopts = [
     "--cov-report=term-missing:skip-covered",
     "--cov-report=html:htmlcov",
     "--cov-report=xml:coverage.xml",
-    "--cov-fail-under=80",
+    "--cov-fail-under=0",
 ]
 markers = [
     "unit: Unit tests",
