@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import type { Mode, WebConfig, MobileConfig } from "../types";
 
 const API = "/api";
@@ -45,6 +45,11 @@ export default function ConfigForm({ mode, disabled }: Props) {
 
   const handleChange = (key: string, value: string) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
+    setSaved(false);
+  };
+
+  const handleBoolChange = (key: string, checked: boolean) => {
+    setConfig((prev) => ({ ...prev, [key]: checked }));
     setSaved(false);
   };
 
@@ -132,7 +137,7 @@ export default function ConfigForm({ mode, disabled }: Props) {
                 <input
                   type="checkbox"
                   checked={!!config.if_listen}
-                  onChange={(e) => handleChange("if_listen", String(e.target.checked))}
+                  onChange={(e) => handleBoolChange("if_listen", e.target.checked)}
                   disabled={disabled}
                   className="accent-emerald-600"
                 />
@@ -142,7 +147,7 @@ export default function ConfigForm({ mode, disabled }: Props) {
                 <input
                   type="checkbox"
                   checked={!!config.fast_mode}
-                  onChange={(e) => handleChange("fast_mode", String(e.target.checked))}
+                  onChange={(e) => handleBoolChange("fast_mode", e.target.checked)}
                   disabled={disabled}
                   className="accent-emerald-600"
                 />
@@ -154,7 +159,7 @@ export default function ConfigForm({ mode, disabled }: Props) {
             <input
               type="checkbox"
               checked={!!config.if_commit_order}
-              onChange={(e) => handleChange("if_commit_order", String(e.target.checked))}
+              onChange={(e) => handleBoolChange("if_commit_order", e.target.checked)}
               disabled={disabled}
               className="accent-emerald-600"
             />
