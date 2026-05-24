@@ -2,7 +2,7 @@
 """
 __Author__ = "WECENG"
 __Version__ = "1.0.0"
-__Description__ = "大麦app抢票自动化"
+__Description__ = "[DEPRECATED] V1 参考版本 — 请使用 damai_app_v2.py"
 __Created__ = 2023/10/26 10:27
 """
 from time import sleep
