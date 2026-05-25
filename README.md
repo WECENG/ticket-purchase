@@ -10,6 +10,23 @@
 - **可配置**：灵活的配置文件，支持多种演出设置
 - **重试机制**：内置重试逻辑，提高成功率
 
+## Quick Start
+
+`ash
+# Mobile mode (Appium + Android device)
+python start.py
+
+# Web mode (Selenium + Chrome browser)
+python start.py --web
+`
+
+start.py automatically checks your environment before launching:
+- Python >= 3.8, Node.js, Appium, UIAutomator2 driver, ADB (mobile mode)
+- Chrome browser (web mode)
+- Provides platform-specific install instructions when something is missing
+
+Supported platforms: **Windows** / **macOS** / **Linux**
+
 ## 📋 系统要求
 
 ### 基础环境

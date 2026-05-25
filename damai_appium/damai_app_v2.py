@@ -6,7 +6,7 @@ __Description__ = "大麦app抢票自动化 - 优化版"
 __Created__ = 2025/09/13 19:27
 """
 
-import time, re, os, logging
+import time, re, os, logging, sys, urllib.request, urllib.error
 from appium import webdriver
 from appium.options.common.base import AppiumOptions
 from appium.webdriver.common.appiumby import AppiumBy
@@ -25,7 +25,44 @@ class DamaiBot:
         self.config = Config.load_config()
         self.driver = None
         self.wait = None
+        self._check_appium_server()
         self._setup_driver()
+
+
+    def _check_appium_server(self, max_wait=30):
+        """Check if Appium server is reachable, exit with guidance if not"""
+        server_url = self.config.server_url
+        status_url = f"{server_url}/status"
+        logging.info(f"Checking Appium server: {server_url} ...")
+        start = time.time()
+        while time.time() - start < max_wait:
+            try:
+                req = urllib.request.Request(status_url)
+                with urllib.request.urlopen(req, timeout=3) as resp:
+                    if resp.status == 200:
+                        logging.info("[OK] Appium server ready")
+                        return
+            except (urllib.error.URLError, ConnectionRefusedError, OSError, Exception):
+                pass
+            elapsed = int(time.time() - start)
+            suffix = f"({elapsed}s/{max_wait}s)"
+            logging.info("  Waiting for Appium... " + suffix)
+            time.sleep(2)
+        logging.error("=" * 60)
+        logging.error("[FAIL] Cannot connect to Appium server!")
+        logging.error("  Target: " + server_url)
+        logging.error("")
+        logging.error("Start Appium first:")
+        logging.error("  1. Install Node.js 20.19+")
+        logging.error("  2. npm install -g appium")
+        logging.error("  3. appium driver install uiautomator2")
+        logging.error("  4. appium --port 4723")
+        logging.error("  Or run: python start.py")
+        logging.error("")
+        logging.error("Also ensure Android device has USB debugging enabled")
+        logging.error("  adb devices   # should show your device")
+        logging.error("=" * 60)
+        sys.exit(2)
 
     def _setup_driver(self):
         """初始化驱动配置"""
@@ -51,7 +88,19 @@ class DamaiBot:
 
         device_app_info = AppiumOptions()
         device_app_info.load_capabilities(capabilities)
-        self.driver = webdriver.Remote(self.config.server_url, options=device_app_info)
+        max_conn_retries = 3
+        for attempt in range(1, max_conn_retries + 1):
+            try:
+                self.driver = webdriver.Remote(self.config.server_url, options=device_app_info)
+                break
+            except Exception as e:
+                if attempt < max_conn_retries:
+                    msg = "Appium connect failed (%d/%d), retrying..." % (attempt, max_conn_retries)
+                    logging.warning(msg)
+                    time.sleep(2)
+                else:
+                    logging.error("[FAIL] Appium connect final failure: " + str(e))
+                    raise
 
         # 更激进的性能优化设置
         self.driver.update_settings({
@@ -312,6 +361,26 @@ class DamaiBot:
             pass
         return False
 
+
+    def wait_for_user_login(self):
+        """Wait for the user to manually log into the Damai app"""
+        logging.info("=" * 60)
+        logging.info("[USER ACTION REQUIRED]")
+        logging.info("=" * 60)
+        logging.info("Please manually complete these steps on your phone:")
+        logging.info("  1. Open the Damai app")
+        logging.info("  2. Log in with your account (scan/password/SMS)")
+        logging.info("  3. Make sure you are on the main/home page")
+        logging.info("")
+        logging.info("The script will NOT proceed until you press Enter.")
+        logging.info("=" * 60)
+        try:
+            input("Press Enter after you have logged in...")
+        except (EOFError, KeyboardInterrupt):
+            logging.info("Aborted by user.")
+            sys.exit(0)
+        logging.info("Proceeding with ticket automation...")
+
     def extract_sale_time(self):
         try:
             time.sleep(1)
@@ -345,6 +414,9 @@ class DamaiBot:
         """执行抢票主流程"""
         try:
             logging.info("开始抢票流程...")
+            # Wait for user to login manually on the phone
+            self.wait_for_user_login()
+
             start_time = time.time()
 
             # 0.5 Auto-extract sale time
