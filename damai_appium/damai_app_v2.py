@@ -205,6 +205,113 @@ class DamaiBot:
             pass
         return False
 
+
+    def navigate_to_concert(self):
+        """搜索并进入目标演出详情页"""
+        keyword = self.config.keyword
+        logging.info(f"搜索演出: {keyword}")
+
+        # Step 1: 检查是否已经在搜索结果页或演出列表页
+        # 尝试直接点击包含关键词的元素
+        try:
+            el = WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located(
+                    (AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().textContains("{keyword}")')
+                )
+            )
+            rect = el.rect
+            self.driver.execute_script("mobile: clickGesture", {
+                "x": rect["x"] + rect["width"] // 2,
+                "y": rect["y"] + rect["height"] // 2,
+                "duration": 50,
+            })
+            logging.info(f"  直接点击成功: {el.text or keyword}")
+            time.sleep(2)
+            return True
+        except TimeoutException:
+            pass
+
+        # Step 2: 尝试点击搜索框并输入关键词
+        try:
+            # 尝试多种搜索框选择器
+            search_selectors = [
+                (By.ID, "cn.damai:id/search_bg_click"),
+                (By.ID, "cn.damai:id/search_box"),
+                (By.ID, "cn.damai:id/header_search_view"),
+                (AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().descriptionContains("搜索")'),
+                (AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().textContains("搜索")'),
+                (AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().className("android.widget.EditText")'),
+            ]
+            clicked_search = False
+            for by, val in search_selectors:
+                try:
+                    el = WebDriverWait(self.driver, 2).until(
+                        EC.element_to_be_clickable((by, val))
+                    )
+                    el.click()
+                    clicked_search = True
+                    break
+                except:
+                    continue
+
+            if clicked_search:
+                time.sleep(0.5)
+                # 输入关键词
+                try:
+                    search_input = WebDriverWait(self.driver, 2).until(
+                        EC.presence_of_element_located(
+                            (AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().className("android.widget.EditText").focused(true)')
+                        )
+                    )
+                except:
+                    search_input = WebDriverWait(self.driver, 2).until(
+                        EC.presence_of_element_located(
+                            (AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().className("android.widget.EditText")')
+                        )
+                    )
+                search_input.clear()
+                search_input.send_keys(keyword)
+                time.sleep(1)
+
+                # 按搜索键
+                self.driver.press_keycode(66)  # ENTER key
+                time.sleep(2)
+
+                # 点击第一个结果
+                try:
+                    el = WebDriverWait(self.driver, 3).until(
+                        EC.presence_of_element_located(
+                            (AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().textContains("{keyword}")')
+                        )
+                    )
+                    rect = el.rect
+                    self.driver.execute_script("mobile: clickGesture", {
+                        "x": rect["x"] + rect["width"] // 2,
+                        "y": rect["y"] + rect["height"] // 2,
+                        "duration": 50,
+                    })
+                    logging.info(f"  搜索后点击成功: {el.text or keyword}")
+                    time.sleep(2)
+                    return True
+                except TimeoutException:
+                    logging.warning("  搜索结果中未找到匹配项")
+        except Exception as e:
+            logging.warning(f"  搜索导航失败: {e}")
+
+        # 失败时 dump
+        logging.warning("  >>> 导航失败，dump 页面文本...")
+        try:
+            xml = self.driver.page_source
+            import re as _re_nav
+            texts = _re_nav.findall(r'text="([^"]*)"', xml)
+            visible = [t for t in texts if t.strip() and len(t.strip()) > 1]
+            logging.warning("  页面上可见文本 ({} 条):".format(len(visible)))
+            for t in visible[:20]:
+                logging.warning("    - " + repr(t))
+        except Exception:
+            pass
+        return False
+
     def extract_sale_time(self):
         try:
             time.sleep(1)
@@ -242,6 +349,11 @@ class DamaiBot:
 
             # 0.5 Auto-extract sale time
             self.extract_sale_time()
+
+            # 0.6 搜索并进入演出详情页
+            if not self.navigate_to_concert():
+                logging.warning("导航到演出详情页失败")
+                return False
 
             # 1. 城市选择 - 两级匹配（先精确后模糊，失败时 dump 页面文本）
             logging.info("选择城市...")
