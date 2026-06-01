@@ -1,16 +1,23 @@
-{
-  "_comment": "=== 邓紫棋 南昌 08.08 ===",
-  "_comment_safe": "if_commit_order=false 不提交订单",
+﻿{
+  "_comment": "=== 移动端 Appium 配置文件说明 ===",
+  "_comment_server_url": "Appium 服务器地址，默认 http://127.0.0.1:4723",
+  "_comment_keyword": "在大麦APP中搜索演出的关键词",
+  "_comment_users": "观演人姓名列表，与大麦APP实名信息一致",
+  "_comment_city": "演出城市名称",
+  "_comment_date": "演出日期（格式: MM.DD，如 06.15）",
+  "_comment_price": "票面价格描述，用于匹配（如 看台380元）",
+  "_comment_price_index": "票档序号（从1开始，选择场次后票档列表的第几个）",
+  "_comment_if_commit_order": "是否自动提交订单",
 
   "server_url": "http://127.0.0.1:4723",
-  "keyword": "邓紫棋",
-  "users": ["张家华", "徐杭"],
-  "city": "南昌",
-  "date": "08.08",
-  "price": "开台380",
+  "keyword": "演出关键词",
+  "users": ["观演人1姓名", "观演人2姓名"],
+  "city": "北京",
+  "date": "06.15",
+  "price": "看台380元",
   "price_index": 1,
   "if_commit_order": false,
   "auto_buy_time": "",
-  "device_name": "57e97d81",
-  "platform_version": "12"
+  "device_name": "",
+  "platform_version": ""
 }

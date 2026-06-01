@@ -1,4 +1,4 @@
-﻿# -*- coding: UTF-8 -*-
+# -*- coding: UTF-8 -*-
 """
 __Author__ = "WECENG / Codex"
 __Version__ = "1.2.0"

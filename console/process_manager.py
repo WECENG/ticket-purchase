@@ -1,4 +1,4 @@
-﻿"""
+"""
 进程管理器：启停抢票脚本，stdout/stderr 管道捕获。
 """
 import asyncio
@@ -59,6 +59,7 @@ class ProcessManager:
         env["PYTHONIOENCODING"] = "utf-8"
         env["PYTHONUTF8"] = "1"
         env["PYTHONUNBUFFERED"] = "1"
+        env["DAMAI_SKIP_LOGIN"] = "1"
 
         if mode == "web":
             script_dir = PROJECT_ROOT / "damai"

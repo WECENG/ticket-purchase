@@ -22,6 +22,7 @@ from pathlib import Path
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    sys.stdin.reconfigure(encoding="utf-8", errors="replace")
 
 PROJECT_DIR = Path(__file__).resolve().parent
 APPIUM_PORT = 4723
@@ -297,6 +298,7 @@ def launch_web_console():
             [sys.executable, "-m", "console.server"],
             cwd=str(PROJECT_DIR),
             env=env,
+            text=True, encoding="utf-8", errors="replace",
         )
         sys.exit(result.returncode)
     except KeyboardInterrupt:
@@ -365,7 +367,7 @@ def main():
             script = PROJECT_DIR / "damai" / "damai.py"
             print(f"Launching Web script: {script}")
             os.chdir(script.parent)
-            result = subprocess.run([sys.executable, str(script)], env=env)
+            result = subprocess.run([sys.executable, str(script)], env=env, stdin=sys.stdin, text=True, encoding="utf-8", errors="replace")
             sys.exit(result.returncode)
         else:
             # Mobile mode: start Appium, then run script
@@ -377,7 +379,7 @@ def main():
             script = PROJECT_DIR / "damai_appium" / "damai_app_v2.py"
             print(f"Launching Mobile script: {script}")
             os.chdir(script.parent)
-            result = subprocess.run([sys.executable, str(script)], env=env)
+            result = subprocess.run([sys.executable, str(script)], env=env, stdin=sys.stdin, text=True, encoding="utf-8", errors="replace")
             stop_appium()
             sys.exit(result.returncode)
     except KeyboardInterrupt:

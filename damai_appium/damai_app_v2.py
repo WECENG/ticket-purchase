@@ -145,6 +145,126 @@ class DamaiBot:
             else:
                 logging.warning(f"点击失败: {value}")
 
+    def select_users_robust(self, timeout=3):
+        """多策略选择观演人 - text/textContains/description/CheckBox遍历"""
+        users = self.config.users
+        found = 0
+
+        # Strategy 1: Try CheckBox + text sibling pattern (common in Damai)
+        # On Damai confirm page, each user is typically a LinearLayout containing:
+        # CheckBox (clickable) + TextView (name)
+        try:
+            # Find all CheckBox elements that are clickable
+            checkboxes = self.driver.find_elements(
+                AppiumBy.ANDROID_UIAUTOMATOR,
+                'new UiSelector().className("android.widget.CheckBox").clickable(true)'
+            )
+            logging.info(f"  找到 {len(checkboxes)} 个勾选框")
+            if checkboxes and len(checkboxes) >= len(users):
+                for i, user in enumerate(users):
+                    try:
+                        self.driver.execute_script("mobile: clickGesture", {
+                            "elementId": checkboxes[i].id,
+                            "duration": 30
+                        })
+                        logging.info(f"  点击勾选框 #{i+1}: {user}")
+                        found += 1
+                        time.sleep(0.1)
+                    except Exception as e:
+                        logging.warning(f"  勾选框 #{i+1} 点击失败: {e}")
+                if found > 0:
+                    logging.info(f"  [Strategy 1] 选中 {found} 个用户")
+                    return True
+        except Exception as e:
+            logging.info(f"  Strategy 1 失败: {e}")
+
+        # Strategy 2: textContains + click parent LinearLayout
+        for user in users:
+            try:
+                el = WebDriverWait(self.driver, timeout).until(
+                    EC.presence_of_element_located((
+                        AppiumBy.ANDROID_UIAUTOMATOR,
+                        f'new UiSelector().textContains("{user}")'
+                    ))
+                )
+                # Click the element itself (might be the name text, tap it to toggle)
+                self.driver.execute_script("mobile: clickGesture", {
+                    "elementId": el.id, "duration": 30
+                })
+                logging.info(f"  [Strategy 2] 点击: {user}")
+                found += 1
+                time.sleep(0.1)
+            except TimeoutException:
+                logging.warning(f"  [Strategy 2] 未找到: {user}")
+            except Exception as e:
+                logging.warning(f"  [Strategy 2] 失败 {user}: {e}")
+
+        if found > 0:
+            logging.info(f"  [Strategy 2] 选中 {found} 个用户")
+            return True
+
+        # Strategy 3: Dump and scan all text elements
+        logging.info("  Strategy 3: 扫描页面所有文本元素...")
+        try:
+            all_texts = self.driver.find_elements(
+                AppiumBy.ANDROID_UIAUTOMATOR,
+                'new UiSelector().className("android.widget.TextView")'
+            )
+            for el in all_texts:
+                txt = (el.text or el.get_attribute("text") or "").strip()
+                if txt:
+                    logging.info(f"    TextView: '{txt}'")
+            # Try clicking by index if we found matching texts
+            for user in users:
+                for i, el in enumerate(all_texts):
+                    txt = (el.text or el.get_attribute("text") or "").strip()
+                    if user in txt or txt in user:
+                        self.driver.execute_script("mobile: clickGesture", {
+                            "elementId": el.id, "duration": 30
+                        })
+                        logging.info(f"  [Strategy 3] 点击: '{txt}' for {user}")
+                        found += 1
+                        time.sleep(0.1)
+                        break
+        except Exception as e:
+            logging.warning(f"  Strategy 3 失败: {e}")
+
+        logging.info(f"  最终选中 {found}/{len(users)} 个用户")
+        return found > 0
+
+    def ultra_batch_click_fuzzy(self, elements_info, user_names, timeout=2):
+        """模糊批量点击 - 每个用户尝试多种选择器，找到1个即停止"""
+        found = 0
+        for user in user_names:
+            clicked = False
+            # Try all selectors for this user
+            for by, value in elements_info:
+                if value.find(user) == -1:  # skip selectors not for this user
+                    continue
+                try:
+                    el = WebDriverWait(self.driver, timeout).until(
+                        EC.presence_of_element_located((by, value))
+                    )
+                    rect = el.rect
+                    x = rect["x"] + rect["width"] // 2
+                    y = rect["y"] + rect["height"] // 2
+                    self.driver.execute_script("mobile: clickGesture", {
+                        "x": x, "y": y, "duration": 30
+                    })
+                    logging.info(f"点击用户: {user}")
+                    found += 1
+                    clicked = True
+                    time.sleep(0.1)
+                    break  # found this user, stop trying other selectors
+                except TimeoutException:
+                    continue
+                except Exception as e:
+                    continue
+            if not clicked:
+                logging.warning(f"超时未找到用户: {user}")
+        logging.info(f"成功找到 {found} 个用户")
+        return found > 0
+
     def ultra_batch_click(self, elements_info, timeout=2):
         """超快批量点击 - 带等待机制"""
         coordinates = []
@@ -364,6 +484,13 @@ class DamaiBot:
 
     def wait_for_user_login(self):
         """Wait for the user to manually log into the Damai app"""
+        skip = os.environ.get('DAMAI_SKIP_LOGIN', '').lower() in ('1', 'true', 'yes')
+        if skip:
+            logging.info('DAMAI_SKIP_LOGIN=1 - skipping manual login prompt')
+            logging.info('Assuming user is already logged in on the phone.')
+            logging.info('=' * 60)
+            return
+
         logging.info("=" * 60)
         logging.info("[USER ACTION REQUIRED]")
         logging.info("=" * 60)
@@ -498,11 +625,9 @@ class DamaiBot:
                 # 备用按钮文本
                 self.ultra_fast_click(AppiumBy.ANDROID_UIAUTOMATOR, 'new UiSelector().textMatches(".*确定.*|.*购买.*")')
 
-            # 6. 批量选择用户
+            # 6. 批量选择用户 - 多策略匹配
             logging.info("选择用户...")
-            user_clicks = [(AppiumBy.ANDROID_UIAUTOMATOR, f'new UiSelector().text("{user}")') for user in
-                           self.config.users]
-            if not self.ultra_batch_click(user_clicks):
+            if not self.select_users_robust():
                 return False
 
             # 7. 提交订单
