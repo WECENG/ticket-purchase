@@ -1,333 +1,217 @@
-# 大麦抢票自动化系统
+﻿# 大麦抢票自动化系统
 
-一个基于Selenium和Appium的大麦网抢票自动化工具，支持Web端和移动端抢票。
+基于 Selenium + Appium 的大麦网自动抢票工具，支持 **Web 端**（Chrome 浏览器）和**移动端**（Android 真机）双模式。
 
-## 🚀 功能特性
+> 移动端（Appium + UIAutomator2）是当前**主推方案**，Web 端 Selenium 可能被大麦风控拦截，作为备用。
 
-- **双端支持**：支持Web端（Selenium）和移动端（Appium）抢票
-- **智能抢票**：自动选择城市、票价、观演人员
-- **高性能**：优化的点击策略，适合抢票场景
-- **可配置**：灵活的配置文件，支持多种演出设置
-- **重试机制**：内置重试逻辑，提高成功率
+---
 
-## Quick Start
+## 快速开始
 
-`ash
-# Mobile mode (Appium + Android device)
+```bash
+# 1. 安装依赖
+pip install selenium appium-python-client
+
+# 2. 移动端模式（推荐）
 python start.py
 
-# Web mode (Selenium + Chrome browser)
+# 3. Web 端模式（备用）
 python start.py --web
-`
 
-start.py automatically checks your environment before launching:
-- Python >= 3.8, Node.js, Appium, UIAutomator2 driver, ADB (mobile mode)
-- Chrome browser (web mode)
-- Provides platform-specific install instructions when something is missing
+# 4. 命令行模式
+python start.py --cli
+```
 
-Supported platforms: **Windows** / **macOS** / **Linux**
+`start.py` 会自动检测环境（Python / Node.js / Appium / ADB / Chrome），缺失时给出平台专属安装指引。
 
-## 📋 系统要求
+---
 
-### 基础环境
-- **Python**: 3.9+
-- **Node.js**: 20.19.0+ 或 22.12.0+ 或 24.0.0+
-- **操作系统**: macOS / Windows / Linux
+## 运行模式
 
-### Web端抢票
-- **Chrome浏览器**: 最新版本
-- **ChromeDriver**: 自动下载
+| 命令 | 模式 | 说明 |
+|------|------|------|
+| `python start.py` | Web 控制台 | FastAPI 界面（http://127.0.0.1:8765），可视化操作 |
+| `python start.py --cli` | 命令行 | 终端交互式选择 Web/Mobile |
+| `python start.py --web` | Web 端直达 | 跳过选择，直接启动 Selenium |
+| `python start.py --dev` | 开发模式 | Vite HMR 热更新 |
+| `python damai/damai.py` | Web 端原生 | 绕过 start.py，直接运行 |
 
-### 移动端抢票
-- **Android SDK**: 已配置环境变量
-- **Appium**: 3.1.0+
-- **Android设备**: 真机或模拟器
+---
 
-## 🛠️ 安装指南
+## 环境要求
 
-### 1. 克隆项目
+| 组件 | Web 端 | 移动端 | 安装方式 |
+|------|:------:|:------:|----------|
+| Python 3.8+ | ✅ | ✅ | [python.org](https://python.org) |
+| Chrome 浏览器 | ✅ | — | [google.cn/chrome](https://www.google.cn/chrome) |
+| ChromeDriver | ✅ | — | 自动安装 |
+| Node.js 20+ | — | ✅ | [nodejs.org](https://nodejs.org) |
+| Appium 3.x | — | ✅ | `npm install -g appium` |
+| UIAutomator2 | — | ✅ | `appium driver install uiautomator2` |
+| Android SDK | — | ✅ | Android Studio 或独立 platform-tools |
+| Android 真机 | — | ✅ | USB 连接，开启「开发者选项」+「USB 调试」 |
+
+### 移动端一键安装
+
 ```bash
-git clone <repository-url>
-cd ticket-purchase
+# Windows
+.\setup_mobile.ps1
 ```
 
-### 2. 安装Python依赖
-```bash
-# 使用Poetry（推荐）
-poetry install
+---
 
-# 或使用pip
-pip install -r requirements.txt
-```
+## 配置文件
 
-### 3. 移动端环境配置（仅移动端抢票需要）
-
-#### 3.1 安装Node.js
-```bash
-# macOS (使用Homebrew)
-brew install node
-
-# 验证版本（需要20.19.0+）
-node --version
-```
-
-#### 3.2 安装Appium
-```bash
-# 全局安装Appium
-npm install -g appium
-
-# 安装UiAutomator2驱动
-appium driver install uiautomator2
-
-# 验证安装
-appium --version
-```
-
-#### 3.3 配置Android环境
-```bash
-# 设置环境变量（添加到 ~/.zshrc 或 ~/.bashrc）
-export ANDROID_HOME=/path/to/your/android/sdk
-export ANDROID_SDK_ROOT=/path/to/your/android/sdk
-
-# 验证ADB
-adb devices
-```
-
-## ⚙️ 配置说明
-
-### 移动端配置 (config.jsonc)
-
-```json
-{
-  "server_url": "http://127.0.0.1:4723",
-  "keyword": "刘若英",
-  "users": [
-    "观演人1",
-    "观演人2"
-  ],
-  "city": "泉州",
-  "date": "10.04",
-  "price": "799元",
-  "price_index": 1,
-  "if_commit_order": true
-}
-```
-
-#### 配置参数说明
-
-| 参数 | 类型 | 说明 | 示例 |
-|------|------|------|------|
-| `server_url` | string | Appium服务器地址 | `"http://127.0.0.1:4723"` |
-| `keyword` | string | 搜索关键词 | `"刘若英"` |
-| `users` | array | 观演人员名单 | `["张三", "李四"]` |
-| `city` | string | 演出城市 | `"泉州"` |
-| `date` | string | 演出日期 | `"10.04"` |
-| `price` | string | 票价描述 | `"799元"` |
-| `price_index` | number | 票价索引（从0开始） | `1` |
-| `if_commit_order` | boolean | 是否自动提交订单 | `true` |
-
-### Web端配置 (config.json)
+### Web 端：`damai/config.json`
 
 ```json
 {
   "index_url": "https://www.damai.cn/",
-  "login_url": "https://passport.damai.cn/login",
-  "target_url": "https://detail.damai.cn/item.htm?id=xxx",
-  "users": ["张三", "李四"],
-  "city": "广州",
-  "date": "2023-10-28",
-  "price": "1039",
-  "if_commit_order": true
+  "login_url": "https://passport.damai.cn/login?ru=https%3A%2F%2Fwww.damai.cn%2F",
+  "target_url": "https://detail.damai.cn/item.htm?id=演出ID",
+  "users": ["观演人1", "观演人2"],
+  "city": "北京",
+  "dates": ["2026-06-15"],
+  "prices": ["680"],
+  "if_listen": true,
+  "if_commit_order": false,
+  "max_retries": 10000
 }
 ```
 
-## 🚀 使用方法
+| 字段 | 说明 |
+|------|------|
+| `target_url` | 演出详情页 URL，从浏览器复制 |
+| `users` | 观演人姓名，与 APP 中已添加的一致 |
+| `city` | 城市（不需要选城市的演出留空 `""`） |
+| `dates` | 场次日期，如 `["2026-06-15", "2026-06-16"]` |
+| `prices` | 票面价格，如 `["380", "680"]` |
+| `if_listen` | 是否监听开票（`true` = 缺货时自动刷新等待） |
+| `if_commit_order` | **`false` = 仅模拟，不下单**（测试用） |
+| `max_retries` | 最大重试次数 |
 
-### 移动端抢票（推荐）
+### 移动端：`damai_appium/config.jsonc`
 
-#### 1. 启动Android设备
-```bash
-# 启动模拟器
-/Users/shengwang/Library/Android/sdk/emulator/emulator -avd YourAVDName
-
-# 或连接真机（需开启USB调试）
-adb devices
+```json
+{
+  "server_url": "http://127.0.0.1:4723",
+  "keyword": "周杰伦",
+  "users": ["观演人1", "观演人2"],
+  "city": "北京",
+  "date": "06.15",
+  "price": "内场680元",
+  "price_index": 1,
+  "if_commit_order": false
+}
 ```
 
-#### 2. 安装大麦APP
-在Android设备上安装大麦APP，并登录账号。
-
-#### 3. 启动Appium服务器
-```bash
-# 设置环境变量
-export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
-export ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk
-
-# 启动Appium服务器
-appium --port 4723
-```
-
-#### 4. 配置抢票参数
-编辑 `damai_appium/config.jsonc` 文件，设置：
-- 搜索关键词
-- 观演人员
-- 城市、日期、票价
-- 其他参数
-
-#### 5. 运行抢票脚本
-```bash
-cd damai_appium
-ANDROID_HOME=/Users/shengwang/Library/Android/sdk ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk python damai_app_v2.py
-```
-
-### Web端抢票
-
-#### 1. 配置参数
-编辑 `damai/config.json` 文件，设置目标演出URL和其他参数。
-
-#### 2. 运行抢票脚本
-```bash
-cd damai
-python damai.py
-```
-
-## 🔧 故障排除
-
-### 常见问题
-
-#### 1. Node.js版本不兼容
-```
-Error: Node version must be at least ^20.19.0 || ^22.12.0 || >=24.0.0
-```
-**解决方案**：升级Node.js到兼容版本
-```bash
-# macOS
-brew upgrade node
-```
-
-#### 2. Android环境变量未设置
-```
-Error: Neither ANDROID_HOME nor ANDROID_SDK_ROOT environment variable was exported
-```
-**解决方案**：设置环境变量
-```bash
-export ANDROID_HOME=/path/to/android/sdk
-export ANDROID_SDK_ROOT=/path/to/android/sdk
-```
-
-#### 3. 设备连接问题
-```
-Error: Unable to find an active device or emulator
-```
-**解决方案**：
-- 检查设备连接：`adb devices`
-- 确保设备已开启USB调试
-- 检查Android版本是否匹配
-
-#### 4. Appium连接失败
-```
-Error: Connection refused
-```
-**解决方案**：
-- 确保Appium服务器正在运行
-- 检查端口4723是否被占用
-- 验证服务器地址配置
-
-### 调试技巧
-
-#### 1. 检查设备状态
-```bash
-# 检查连接的设备
-adb devices
-
-# 检查设备Android版本
-adb shell getprop ro.build.version.release
-
-# 检查设备是否完全启动
-adb shell getprop sys.boot_completed
-```
-
-#### 2. 验证Appium连接
-```bash
-# 检查Appium服务器状态
-curl http://127.0.0.1:4723/status
-```
-
-#### 3. 查看应用包名
-```bash
-# 查看已安装的应用
-adb shell pm list packages | grep damai
-```
-
-## 📁 项目结构
-
-```
-ticket-purchase/
-├── damai/                    # Web端抢票
-│   ├── damai.py             # 主程序
-│   ├── config.py            # 配置类
-│   ├── config.json          # 配置文件
-│   └── requirements.txt      # 依赖文件
-├── damai_appium/             # 移动端抢票
-│   ├── damai_app_v2.py      # 优化版主程序
-│   ├── damai_app.py         # 原版主程序
-│   ├── config.py            # 配置类
-│   ├── config.jsonc         # 配置文件
-│   └── app.md               # 应用说明
-├── tests/                    # 测试文件
-├── doc/                      # 文档
-├── img/                      # 图片资源
-└── README.md                 # 说明文档
-```
-
-## 🎯 使用流程
-
-### 移动端抢票完整流程
-
-1. **环境准备**
-   - 安装Node.js (20.19.0+)
-   - 安装Appium和驱动
-   - 配置Android SDK环境变量
-
-2. **设备准备**
-   - 启动Android模拟器或连接真机
-   - 安装大麦APP并登录
-
-3. **配置参数**
-   - 编辑 `config.jsonc` 文件
-   - 设置演出信息、观演人员等
-
-4. **启动服务**
-   - 启动Appium服务器
-   - 验证设备连接
-
-5. **执行抢票**
-   - 在模拟器上打开大麦APP
-   - 搜索目标演出
-   - 运行抢票脚本
-
-6. **监控结果**
-   - 脚本自动执行抢票流程
-   - 查看控制台输出
-   - 检查订单状态
-
-## ⚠️ 注意事项
-
-1. **合法使用**：请遵守大麦网的使用条款，合理使用自动化工具
-2. **账号安全**：建议使用专门的测试账号
-3. **网络环境**：确保网络连接稳定
-4. **设备性能**：建议使用性能较好的设备进行抢票
-5. **时间设置**：提前设置好抢票时间，确保脚本在开售时间运行
-
-## 🤝 贡献指南
-
-欢迎提交Issue和Pull Request来改进项目。
-
-## 📄 许可证
-
-本项目仅供学习和研究使用，请勿用于商业用途。
+**两种模式**：
+- `mode: "reserved"`（默认）— 预约模式：已收藏演出，到点直接抢
+- `mode: "full"` — 完整模式：搜索演出 → 选城市/日期/票价 → 选人 → 下单
 
 ---
 
-**最后更新**: 2024年10月
-**版本**: 2.0.0
+## 抢票流程
+
+### Web 端
+
+```
+① 启动 → 加载 Cookie / 扫码登录
+② 进入演出详情页
+③ 选择 城市 → 日期 → 票价 → 数量
+④ 轮询「立即购买」按钮（自动处理缺货/刷新）
+⑤ 选座购买 / 直购
+⑥ UserSelectorChain 4 策略选观影人（Div→Checkbox→TextClick→JS）
+⑦ 提交订单
+```
+
+### 移动端
+
+```
+① Appium 连接 Android 真机 → 打开大麦 APP
+② 搜索演出关键词 → 进入详情页
+③ 等待 auto_buy_time 到点
+④ 轮询「立即购买」→ 点击
+⑤ select_users_robust 多策略选人（CheckBox→textContains→页面扫描）
+⑥ 提交订单
+⑦ run_with_retry：0.5s 间隔 × 最长 300s 高频重试
+```
+
+---
+
+## 常见问题
+
+### Cookie 过期
+删除 `damai/damai_cookies.pkl`，重新运行脚本会在浏览器中弹出扫码登录。
+
+### ChromeDriver 不匹配
+```bash
+pip install chromedriver-autoinstaller
+# 或手动下载: https://googlechromelabs.github.io/chrome-for-testing/
+```
+
+### 移动端 Appium 连接失败
+```bash
+# 确认 Appium 运行中
+appium --version
+
+# 检查设备
+adb devices
+
+# 手动启动
+appium --port 4723
+```
+
+### 编码乱码
+```bash
+# 设置 UTF-8
+set PYTHONIOENCODING=utf-8    # Windows CMD
+$env:PYTHONIOENCODING="utf-8" # PowerShell
+```
+
+---
+
+## 项目结构
+
+```
+damai/
+├── concert.py              # Web 端核心（Concert 类）
+├── concert_selectors.py    # 选择器常量（Sel class）
+├── concert_user_selector.py # 观影人选择策略链（4 策略）
+├── check_environment.py    # 环境检测 + ChromeDriver 自动安装
+├── damai.py                # Web 端入口
+├── config.json             # Web 端配置
+├── config.py               # Config 数据类
+├── quick_diagnosis.py      # 快速诊断工具
+damai_appium/
+├── damai_app_v2.py         # 移动端核心（DamaiBot 类，推荐）
+├── damai_app.py            # 移动端 V1（已弃用）
+├── config.jsonc            # 移动端配置文件
+├── config.py               # Config 加载
+console/                    # Web 控制台（FastAPI + React）
+tests/
+├── test_smoke.py           # 冒烟测试（29 个业务逻辑测试）
+├── test_setup_validation.py # 基础设施测试（16 个）
+└── unit/                   # 单元测试（4 个）
+```
+
+---
+
+## 测试
+
+```bash
+# 全部测试（49 个）
+pytest tests/ -v
+
+# 仅冒烟测试（业务逻辑）
+pytest tests/test_smoke.py -v
+
+# 仅环境检测测试
+pytest tests/unit/ -v
+```
+
+---
+
+## 免责声明
+
+本项目仅用于学习和研究，请勿用于商业用途。使用本工具产生的一切后果由使用者自行承担。
