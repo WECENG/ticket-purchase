@@ -8,62 +8,12 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from tests.helpers import make_mock_config, make_mock_element
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "damai"))
 
 
-def make_mock_config(**overrides):
-    cfg = Mock()
-    defaults = {
-        "index_url": "https://www.damai.cn/",
-        "login_url": "https://passport.damai.cn/login",
-        "target_url": "https://detail.damai.cn/item.htm?id=123456",
-        "users": ["ZhangSan", "LiSi"],
-        "city": "Beijing",
-        "dates": ["2026-06-15"],
-        "prices": ["680"],
-        "if_listen": True,
-        "if_commit_order": False,
-        "max_retries": 100,
-        "fast_mode": True,
-        "page_load_delay": 2,
-    }
-    defaults.update(overrides)
-    for k, v in defaults.items():
-        setattr(cfg, k, v)
-    return cfg
-
-
-def make_mock_element(text="", tag="div", attrs=None, displayed=True, enabled=True):
-    el = Mock()
-    el.text = text
-    el.tag_name = tag
-    el.is_displayed.return_value = displayed
-    el.is_enabled.return_value = enabled
-    el.is_selected.return_value = False
-    el.get_attribute = Mock(side_effect=lambda a: (attrs or {}).get(a, ""))
-    el.find_element = Mock(side_effect=lambda *a, **kw: make_mock_element())
-    el.find_elements = Mock(return_value=[])
-    el.click = Mock()
-    el.rect = {"x": 0, "y": 0, "width": 100, "height": 40}
-    return el
-
-
 class TestConcertToolMethods:
-
-    @pytest.fixture
-    def concert(self):
-        with patch("check_environment.get_chromedriver_path", return_value="/fake/chromedriver"):
-            with patch("concert.webdriver.Chrome") as mock_chrome:
-                mock_driver = Mock()
-                mock_driver.title = "damai"
-                mock_driver.current_url = "https://m.damai.cn/detail?itemId=123"
-                mock_driver.find_element = Mock()
-                mock_driver.find_elements = Mock(return_value=[])
-                mock_driver.get = Mock()
-                mock_driver.quit = Mock()
-                mock_chrome.return_value = mock_driver
-                from concert import Concert
-                return Concert(make_mock_config())
 
     def test_init(self, concert):
         assert concert.config is not None
@@ -85,6 +35,9 @@ class TestConcertToolMethods:
         assert concert._is_order_confirmation_page() is False
 
     def test_is_mobile(self, concert):
+        concert.driver.current_url = (
+            "https://m.damai.cn/detail?itemId=123"
+        )
         assert concert._is_mobile() is True
         concert.driver.current_url = "https://www.damai.cn/"
         assert concert._is_mobile() is False
@@ -119,8 +72,12 @@ class TestConcertToolMethods:
         assert concert._select_option_by_config(["680"], [el]) is False
 
     def test_select_option_empty(self, concert):
-        assert concert._select_option_by_config([], [make_mock_element()]) is False
-        assert concert._select_option_by_config(["680"], []) is False
+        assert concert._select_option_by_config(
+            [], [make_mock_element()]
+        ) is False
+        assert concert._select_option_by_config(
+            ["680"], []
+        ) is False
 
     def test_find_and_click(self, concert):
         el = make_mock_element(text="Beijing", tag="span")
@@ -194,42 +151,55 @@ class TestUserSelectorChain:
     def test_div_no_match(self, mock_driver):
         from concert_user_selector import DivCheckboxStrategy
         mock_driver.find_elements.return_value = []
-        assert DivCheckboxStrategy().try_select("Nope", mock_driver, 0.01) is False
+        assert DivCheckboxStrategy().try_select(
+            "Nope", mock_driver, 0.01
+        ) is False
 
     def test_label_selects(self, mock_driver):
         from concert_user_selector import CheckboxLabelStrategy
-        label = make_mock_element(text="ZhangSan 138****", tag="label")
+        label = make_mock_element(
+            text="ZhangSan 138****", tag="label"
+        )
         label.get_attribute = Mock(return_value="cb_1")
         cb = make_mock_element(tag="input", attrs={"type": "checkbox"})
         cb.is_selected.return_value = False
         mock_driver.find_elements.return_value = [label]
-        # Override fixture default: find_element with ID="cb_1" must return the checkbox
         mock_driver.find_element = Mock(return_value=cb)
         mock_driver.find_element.side_effect = None
-        assert CheckboxLabelStrategy().try_select("ZhangSan", mock_driver, 0.01) is True
+        assert CheckboxLabelStrategy().try_select(
+            "ZhangSan", mock_driver, 0.01
+        ) is True
 
     def test_text_click(self, mock_driver):
         from concert_user_selector import TextClickStrategy
         el = make_mock_element(text="ZhangSan", tag="span")
         mock_driver.find_elements.return_value = [el]
-        assert TextClickStrategy().try_select("ZhangSan", mock_driver, 0.01) is True
+        assert TextClickStrategy().try_select(
+            "ZhangSan", mock_driver, 0.01
+        ) is True
 
     def test_text_no_match(self, mock_driver):
         from concert_user_selector import TextClickStrategy
         mock_driver.find_elements.return_value = []
-        assert TextClickStrategy().try_select("Nope", mock_driver, 0.01) is False
+        assert TextClickStrategy().try_select(
+            "Nope", mock_driver, 0.01
+        ) is False
 
     def test_chain_ok(self, mock_driver):
         from concert_user_selector import UserSelectorChain
         el = make_mock_element(text="ZhangSan", tag="span")
         mock_driver.find_elements.return_value = [el]
-        assert UserSelectorChain.select_user("ZhangSan", mock_driver, 0.01) is True
+        assert UserSelectorChain.select_user(
+            "ZhangSan", mock_driver, 0.01
+        ) is True
 
     def test_chain_fail(self, mock_driver):
         from concert_user_selector import UserSelectorChain
         mock_driver.find_elements.return_value = []
         mock_driver.execute_script.side_effect = Exception("no")
-        assert UserSelectorChain.select_user("Nope", mock_driver, 0.01) is False
+        assert UserSelectorChain.select_user(
+            "Nope", mock_driver, 0.01
+        ) is False
 
 
 class TestDamaiConfig:
@@ -238,8 +208,8 @@ class TestDamaiConfig:
         from damai.config import Config
         cfg = Config(
             "https://a.com", "https://b.com", "https://c.com",
-            ["u1", "u2"], "Shanghai", ["2026-07-01"], ["380", "580"],
-            False, True, 50, False, 5,
+            ["u1", "u2"], "Shanghai", ["2026-07-01"],
+            ["380", "580"], False, True, 50, False, 5,
         )
         assert cfg.users == ["u1", "u2"]
         assert cfg.max_retries == 50
@@ -247,16 +217,23 @@ class TestDamaiConfig:
 
     def test_commit_false(self):
         from damai.config import Config
-        cfg = Config("", "", "", ["u1"], "", [], [], True, False, 10, True, 2)
+        cfg = Config(
+            "", "", "", ["u1"], "", [], [], True, False, 10, True, 2
+        )
         assert cfg.if_commit_order is False
 
     def test_missing_users_exits(self):
         with patch("os.path.exists", return_value=True):
             with patch("builtins.open", create=True) as mo:
-                mo.return_value.__enter__.return_value.read.return_value = json.dumps({
-                    "index_url": "a", "login_url": "b", "target_url": "c",
-                    "users": [], "if_listen": True, "if_commit_order": False,
-                })
+                mo.return_value.__enter__.return_value.read.return_value = \
+                    json.dumps({
+                        "index_url": "a",
+                        "login_url": "b",
+                        "target_url": "c",
+                        "users": [],
+                        "if_listen": True,
+                        "if_commit_order": False,
+                    })
                 import damai.damai
                 with pytest.raises(SystemExit):
                     damai.damai.check_config_file()

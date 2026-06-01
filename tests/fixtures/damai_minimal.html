@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>大麦网-商品详情</title>
+</head>
+<body>
+    <button class="buy__button__text">立即购买</button>
+    <a class="buy-link">不，立即预订</a>
+    <div id="confirm-page" style="display:none">
+        <h1>订单确认页</h1>
+        <button>提交订单</button>
+    </div>
+    <script>
+        document.querySelector('.buy__button__text')
+            .addEventListener('click', function() {
+                document.title = '订单确认页';
+                document.getElementById('confirm-page').style.display = 'block';
+            });
+    </script>
+</body>
+</html>
