@@ -509,7 +509,7 @@ class DamaiBot:
             self.log(f"  搜索导航失败: {e}")
 
         # 失败时 dump
-        self.log("  >>> 导航失败，dump 页面文本...")
+        self.log("  >>> 导航失败，关闭弹窗并重试...")
         try:
             xml = self.driver.page_source
             import re as _re_nav
@@ -548,6 +548,36 @@ class DamaiBot:
             self.log("Aborted by user.")
             sys.exit(0)
         self.log("Proceeding with ticket automation...")
+
+    
+    def _reset_to_home(self):
+        """恢复到首页，处理各种弹窗"""
+        try:
+            # 尝试点「知道了」关闭任何弹窗
+            for txt in ['知道', '知道了', '确定', '取消']:
+                try:
+                    el = self.driver.find_element(
+                        AppiumBy.ANDROID_UIAUTOMATOR,
+                        f'new UiSelector().textContains("{txt}")'
+                    )
+                    if el:
+                        self.driver.execute_script('mobile: clickGesture', {
+                            'elementId': el.id, 'duration': 30
+                        })
+                        time.sleep(0.3)
+                except:
+                    pass
+            # 按多次返回键回到首页
+            for _ in range(3):
+                try:
+                    self.driver.back()
+                    time.sleep(0.3)
+                except:
+                    pass
+            self.log('已重置到首页')
+        except Exception as e:
+            self.log(f'重置首页失败: {e}', 'warning')
+
 
     def extract_sale_time(self):
         try:
@@ -715,12 +745,28 @@ class DamaiBot:
                     top = candidates[:5]  # 最多试5个
                     self.log(f"找到 {len(candidates)} 个候选，前{len(top)}个: {[(s,t) for s,t,_ in top]}")
                 else:
-                    # 检查倒计时
+                    # 无候选按钮：检查页面状态
                     try:
                         xml = self.driver.page_source
+                        # 检测缺货登记 → 刷新页面等补货
+                        if '缺货登记' in xml or '无票' in xml:
+                            self.log("  票已售罄，刷新页面等待补货...")
+                            try:
+                                # 点返回再重新进入
+                                self.driver.back()
+                                time.sleep(0.5)
+                                # 重新点击进入演出详情
+                                self.navigate_to_concert()
+                                time.sleep(1)
+                            except:
+                                pass
+                            continue
+                        # 检测倒计时
                         cds = re.findall(r'text="(\d{2}:\d{2}:\d{2})"', xml)
                         if cds:
-                            self.log(f"  倒计时: {cds[0]}，继续等待...")
+                            self.log(f"  倒计时: {cds[0]}，等待开售...")
+                        else:
+                            self.log("  暂无可用按钮，等待页面变化...")
                     except:
                         pass
                     time.sleep(1)
