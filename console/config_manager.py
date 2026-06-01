@@ -1,4 +1,4 @@
-﻿"""
+"""
 配置管理器：表单数据 ↔ config.json / config.jsonc 读写。
 """
 import json

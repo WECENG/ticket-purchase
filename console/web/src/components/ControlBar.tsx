@@ -1,4 +1,4 @@
-﻿import type { StatusData } from "../types";
+import type { StatusData } from "../types";
 
 interface Props {
   status: StatusData;

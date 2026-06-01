@@ -1,4 +1,4 @@
-﻿"""
+"""
 FastAPI 服务器：REST API + WebSocket + 静态文件 serve。
 用法: python -m console.server [--dev]
 """

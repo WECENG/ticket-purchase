@@ -27,7 +27,7 @@ class TestInfrastructureSetup:
         assert pyproject_path.exists(), "pyproject.toml should exist"
         
         # Read and validate content
-        content = pyproject_path.read_text()
+        content = pyproject_path.read_text(encoding='utf-8')
         assert "[tool.poetry]" in content, "Poetry configuration should be present"
         assert "[tool.pytest.ini_options]" in content, "Pytest configuration should be present"
         assert "[tool.coverage" in content, "Coverage configuration should be present"
@@ -38,7 +38,7 @@ class TestInfrastructureSetup:
         assert conftest_path.exists(), "tests/conftest.py should exist"
         
         # Verify it contains fixture definitions
-        content = conftest_path.read_text()
+        content = conftest_path.read_text(encoding='utf-8')
         assert "@pytest.fixture" in content, "conftest.py should contain fixtures"
     
     def test_packages_importable(self):
@@ -86,7 +86,7 @@ class TestFixturesAvailable:
         test_file = temp_dir / "test.txt"
         test_file.write_text("test content")
         assert test_file.exists()
-        assert test_file.read_text() == "test content"
+        assert test_file.read_text(encoding='utf-8') == "test content"
     
     def test_mock_config_fixture(self, mock_config):
         """Test that mock_config fixture provides expected configuration."""
@@ -136,7 +136,7 @@ class TestFixturesAvailable:
         test_file = mock_file_operations("test.txt", "test content")
         
         assert test_file.exists()
-        assert test_file.read_text() == "test content"
+        assert test_file.read_text(encoding='utf-8') == "test content"
 
 
 class TestCoverageConfiguration:
@@ -145,7 +145,7 @@ class TestCoverageConfiguration:
     def test_coverage_configured(self):
         """Test that coverage is properly configured in pyproject.toml."""
         pyproject_path = Path("pyproject.toml")
-        content = pyproject_path.read_text()
+        content = pyproject_path.read_text(encoding='utf-8')
         
         # Check coverage settings
         assert "--cov=damai" in content

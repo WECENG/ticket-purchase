@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Mode, StatusData, LogEntry } from "./types";
 import ConfigForm from "./components/ConfigForm";
 import ControlBar from "./components/ControlBar";

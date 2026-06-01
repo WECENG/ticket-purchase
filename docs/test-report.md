@@ -1,4 +1,4 @@
-﻿# Android 端测试报告
+# Android 端测试报告
 
 > 日期: 2026-05-25 | 设备: Xiaomi Mi 11 (Android 12) | Appium v3.4.2
 
