@@ -1,9 +1,10 @@
 {
   "_comment": "=== 张韶涵 上海 06.13 ===",
-  "_comment_mode": "reserved=预约模式(跳过选座直接抢) / full=完整模式(搜索→选)→选人)",
+  "_comment_mode": "reserved=预约 / full=完整",
 
   "server_url": "http://127.0.0.1:4723",
   "mode": "reserved",
+  "log_level": "INFO",
   "keyword": "张韶涵",
   "users": ["徐杭", "左学容"],
   "city": "上海",
