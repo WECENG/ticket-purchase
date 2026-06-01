@@ -34,3 +34,7 @@ Thumbs.db
 
 # Cookies
 cookies.pkldamai_cookies.pkl
+
+# Runtime artifacts
+*.pkl
+logs/
