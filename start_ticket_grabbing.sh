@@ -4,9 +4,8 @@
 
 echo "🎫 启动大麦抢票脚本..."
 
-# 设置Android环境变量
-export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
-export ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk
+# 可通过环境变量覆盖 Python；默认优先使用 python3。
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 # 检查Appium服务器是否运行
 if ! curl -s http://127.0.0.1:4723/status > /dev/null; then
@@ -48,4 +47,4 @@ echo "   3. 已进入演出详情页面"
 echo ""
 
 # 运行抢票脚本
-/Users/shengwang/Library/Caches/pypoetry/virtualenvs/damai-ticket-automation-L9sk-bCq-py3.12/bin/python damai_app_v2.py
+"$PYTHON_BIN" damai_app_v2.py

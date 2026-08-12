@@ -1,13 +1,23 @@
 {
   "server_url": "http://127.0.0.1:4723",
+  "start_at": null,
   "keyword": "周深",
+  "target_title": "周深巡回演唱会",
   "users": [
-    "王胜",
-    "潘鸿运"
+    "观演人姓名"
   ],
   "city": "深圳",
   "date": "12.06",
   "price": "内场1199元",
-  "price_index": 5,
-  "if_commit_order": true
+  "price_index": null,
+  "if_commit_order": false,
+  "result_index": 0,
+  "udid": null,
+  "device_name": "Android",
+  "platform_version": null,
+  "max_retries": 40,
+  "retry_interval": 0.25,
+  "element_timeout": 6,
+  "order_timeout": 45,
+  "keep_session": true
 }

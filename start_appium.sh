@@ -4,13 +4,10 @@
 
 echo "🚀 启动大麦抢票环境..."
 
-# 设置Android环境变量
-export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
-export ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk
-
-echo "✅ 环境变量已设置"
-echo "   ANDROID_HOME: $ANDROID_HOME"
-echo "   ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+if [ -z "$ANDROID_HOME" ] && [ -z "$ANDROID_SDK_ROOT" ]; then
+    echo "❌ 请先设置 ANDROID_HOME 或 ANDROID_SDK_ROOT"
+    exit 1
+fi
 
 # 检查Node.js版本
 NODE_VERSION=$(node --version | cut -d'v' -f2)
@@ -29,7 +26,6 @@ DEVICES=$(adb devices | grep -c "device$")
 if [ $DEVICES -eq 0 ]; then
     echo "⚠️  未检测到Android设备"
     echo "   请启动模拟器或连接真机"
-    echo "   启动模拟器: /Users/shengwang/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_36.0"
     exit 1
 else
     echo "✅ 检测到 $DEVICES 个Android设备"

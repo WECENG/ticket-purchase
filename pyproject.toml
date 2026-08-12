@@ -12,6 +12,8 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.8"
 selenium = "4.18.1"
+appium-python-client = "^3.2.1"
+chromedriver-autoinstaller = "^0.6.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

@@ -22,7 +22,7 @@
 - **ChromeDriver**: 自动下载
 
 ### 移动端抢票
-- **Android SDK**: 已配置环境变量
+- **Android SDK / platform-tools**: 配置环境变量，或将 `platform-tools` 放在项目根目录（Windows）
 - **Appium**: 3.1.0+
 - **Android设备**: 真机或模拟器
 
@@ -67,6 +67,16 @@ appium --version
 ```
 
 #### 3.3 配置Android环境
+
+Windows 用户可以配置完整 Android SDK，也可以将 Google 官方
+`platform-tools` 解压到项目根目录；该目录已被 `.gitignore` 排除，不应提交。
+
+```powershell
+.\platform-tools\adb.exe devices
+```
+
+macOS / Linux：
+
 ```bash
 # 设置环境变量（添加到 ~/.zshrc 或 ~/.bashrc）
 export ANDROID_HOME=/path/to/your/android/sdk
@@ -83,7 +93,9 @@ adb devices
 ```json
 {
   "server_url": "http://127.0.0.1:4723",
+  "start_at": null,
   "keyword": "刘若英",
+  "target_title": "刘若英巡回演唱会",
   "users": [
     "观演人1",
     "观演人2"
@@ -92,7 +104,8 @@ adb devices
   "date": "10.04",
   "price": "799元",
   "price_index": 1,
-  "if_commit_order": true
+  "if_commit_order": false,
+  "udid": null
 }
 ```
 
@@ -101,13 +114,16 @@ adb devices
 | 参数 | 类型 | 说明 | 示例 |
 |------|------|------|------|
 | `server_url` | string | Appium服务器地址 | `"http://127.0.0.1:4723"` |
+| `start_at` | string/null | 定时开抢时间；`null` 表示立即开始 | `"2027-01-01 10:00:00"` |
 | `keyword` | string | 搜索关键词 | `"刘若英"` |
+| `target_title` | string | 用于校验搜索结果的完整或关键标题 | `"刘若英巡回演唱会"` |
 | `users` | array | 观演人员名单 | `["张三", "李四"]` |
 | `city` | string | 演出城市 | `"泉州"` |
 | `date` | string | 演出日期 | `"10.04"` |
 | `price` | string | 票价描述 | `"799元"` |
-| `price_index` | number | 票价索引（从0开始） | `1` |
-| `if_commit_order` | boolean | 是否自动提交订单 | `true` |
+| `price_index` | number/null | 票价文字不可见时的备用索引（从0开始） | `1` |
+| `if_commit_order` | boolean | 是否自动提交真实订单；默认建议关闭 | `false` |
+| `udid` | string/null | 指定 Android 设备序列号 | `null` |
 
 ### Web端配置 (config.json)
 
@@ -141,6 +157,15 @@ adb devices
 在Android设备上安装大麦APP，并登录账号。
 
 #### 3. 启动Appium服务器
+
+Windows：
+
+```powershell
+.\start_appium.ps1
+```
+
+macOS / Linux：
+
 ```bash
 # 设置环境变量
 export ANDROID_HOME=/Users/shengwang/Library/Android/sdk
@@ -158,6 +183,15 @@ appium --port 4723
 - 其他参数
 
 #### 5. 运行抢票脚本
+
+Windows：
+
+```powershell
+.\start_ticket_grabbing.ps1
+```
+
+macOS / Linux：
+
 ```bash
 cd damai_appium
 ANDROID_HOME=/Users/shengwang/Library/Android/sdk ANDROID_SDK_ROOT=/Users/shengwang/Library/Android/sdk python damai_app_v2.py

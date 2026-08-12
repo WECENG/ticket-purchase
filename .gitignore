@@ -152,6 +152,7 @@ cython_debug/
 # Windows
 Thumbs.db
 ehthumbs.db
+/platform-tools/
 
 # Selenium
 *.log

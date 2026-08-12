@@ -38,7 +38,7 @@ class TestInfrastructureSetup:
         assert conftest_path.exists(), "tests/conftest.py should exist"
         
         # Verify it contains fixture definitions
-        content = conftest_path.read_text()
+        content = conftest_path.read_text(encoding="utf-8")
         assert "@pytest.fixture" in content, "conftest.py should contain fixtures"
     
     def test_packages_importable(self):
